@@ -331,6 +331,7 @@ export async function generateVibe(options) { // Export for testing
 
     // --- AI Hybrid Check ---
     let combinedRules;
+    let llmLog;
     const openAiKey = process.env.OPENAI_API_KEY;
 
     if (openAiKey) {
