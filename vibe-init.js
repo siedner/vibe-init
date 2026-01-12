@@ -11,9 +11,11 @@ import dotenv from 'dotenv';
 import os from 'os';
 
 // --- Configuration Loading ---
-// Load from multiple sources (Priority: current .env > home dir .env .vibe-init > process.env)
-dotenv.config({ path: path.join(os.homedir(), '.vibe-init') }); // Global
-dotenv.config(); // Local (overrides global)
+// --- Configuration Loading ---
+// Priority: Process Env > Local .env > Local .vibe-init > Global .vibe-init
+dotenv.config(); // 1. Local .env
+dotenv.config({ path: path.join(process.cwd(), '.vibe-init') }); // 2. Local .vibe-init
+dotenv.config({ path: path.join(os.homedir(), '.vibe-init') }); // 3. Global .vibe-init
 
 // --- Configuration ---
 const ANTIGRAVITY_DIRS = [
