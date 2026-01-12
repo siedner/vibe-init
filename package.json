@@ -16,8 +16,9 @@
     "license": "ISC",
     "dependencies": {
         "@clack/prompts": "^0.7.0",
-        "picocolors": "^1.0.0",
         "figlet": "^1.6.0",
-        "gradient-string": "^2.0.2"
+        "gradient-string": "^2.0.2",
+        "openai": "^6.16.0",
+        "picocolors": "^1.0.0"
     }
 }

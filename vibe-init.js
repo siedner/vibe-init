@@ -6,6 +6,7 @@ import { intro, outro, text, select, multiselect, confirm, spinner, note, isCanc
 import pc from 'picocolors';
 import figlet from 'figlet';
 import gradient from 'gradient-string';
+import OpenAI from 'openai';
 
 // --- Configuration ---
 const ANTIGRAVITY_DIRS = [
@@ -69,11 +70,57 @@ Your goal is to create AWWWARDS-WINNING digital experiences.
   - Prioritize motion fidelity (60fps) over pure lighthouse scores if necessary.
 `,
         outro: '🎨 Make it pop. Dazzle them.'
+    },
+    pixel_perfect: {
+        name: '👾 Pixel Perfect (Game Dev)',
+        desc: 'Gameplay > Graphics. "Juice it up".',
+        systemPrompt: `
+## Philosophy: PIXEL PERFECT
+Your goal is to create ADDICTIVE GAMEPLAY loops.
+- **Persona:** You are a Gameplay Engineer (Mechanics First).
+- **Rules:**
+  - **Game Feel:** Add "juice" immediately (Screen shake, particles, squash & stretch).
+  - **Input:** Input handling must be decoupled from game logic.
+  - **Performance:** Zero allocations in the update loop. Use Object Pooling.
+`,
+        outro: '👾 High Score Saved. insert coin.'
     }
 };
 
 // --- 2. STACKS (Technology) ---
 const STACKS = {
+    web_game_phaser: {
+        name: 'Web Game (Phaser)',
+        desc: 'Phaser 3 + TypeScript + Vite',
+        techRules: `
+## Tech Stack: Phaser 3 + Vite
+- **Engine:** Phaser 3 (Arcade Physics default).
+- **Language:** TypeScript (Strict).
+- **Structure:**
+  - Use **Scenes** for states (Boot, Preload, Menu, Game).
+  - Use **Object Pooling** for bullets/enemies.
+  - Assets: Manage in a central \`AssetLoader\`.
+`,
+        envVars: `VITE_GAME_TITLE=My Awesome Game
+VITE_GAME_VERSION=0.0.1`
+    },
+    godot_engine: {
+        name: 'Godot Engine',
+        desc: 'Godot 4.x + GDScript',
+        techRules: `
+## Tech Stack: Godot 4
+- **Engine:** Godot 4.x
+- **Language:** GDScript (Use Type Hinting \`var x: int\`).
+- **Patterns:**
+  - Use **Signals** for decoupled communication.
+  - Use **Resources** for data (stats, configs).
+  - Composition over Inheritance (Attach scripts to Nodes).
+- **AI Rules:**
+  - Be careful with Godot 3 vs 4 syntax changes (e.g. \`tween_property\`).
+  - Use \`await\` for coroutines.
+`,
+        envVars: ``
+    },
     next_supabase: {
         name: 'Next.js + Supabase',
         desc: 'App Router, Tailwind v4, Postgres',
@@ -211,6 +258,48 @@ function getProjectName(isExisting) {
     return null;
 }
 
+// --- AI Logic ---
+async function generateDynamicRules(apiKey, project, vibe, stack, cwd) {
+    try {
+        const openai = new OpenAI({ apiKey });
+
+        // Scan package.json for context
+        let pkgContext = '';
+        if (fs.existsSync(path.join(cwd, 'package.json'))) {
+            try {
+                const pkg = JSON.parse(fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8'));
+                const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+                pkgContext = `Dependencies: ${Object.keys(deps).join(', ')}`;
+            } catch (e) { }
+        }
+
+        const prompt = `
+        Draft a system instruction file (.cursorrules) for an AI coding agent.
+        Project: ${project}
+        Vibe: ${vibe.name}
+        Stack: ${stack.name}
+        Context: ${pkgContext}
+        
+        Requirements:
+        1. Keep the Vibe's philosophy: "${vibe.desc}"
+        2. Analyze the dependencies and generat HIGHLY SPECIFIC rules for them (e.g. if 'zod' is present, enforce schema validation).
+        3. Output ONLY the markdown content for the rules file.
+        `;
+
+        const model = process.env.VIBE_AI_MODEL || 'gpt-4o';
+
+        const completion = await openai.chat.completions.create({
+            messages: [{ role: 'user', content: prompt }],
+            model: model,
+        });
+
+        return completion.choices[0].message.content;
+
+    } catch (error) {
+        return null; // Fallback to static
+    }
+}
+
 // --- Core Logic ---
 export async function generateVibe(options) { // Export for testing
     const { project, vibeKey, stackKey, ideKeys, useStrictMemory, cwd = process.cwd() } = options;
@@ -220,7 +309,23 @@ export async function generateVibe(options) { // Export for testing
     const selectedStack = STACKS[stackKey];
     const memoryPolicy = useStrictMemory ? MEMORY_POLICIES.strict : MEMORY_POLICIES.casual;
 
-    const combinedRules = `# Role: Vibe Coder\n\n${selectedVibe.systemPrompt}\n\n${selectedStack.techRules}\n\n${memoryPolicy}`;
+    // --- AI Hybrid Check ---
+    let combinedRules;
+    const openAiKey = process.env.OPENAI_API_KEY;
+
+    if (openAiKey) {
+        // AI Mode
+        const aiRules = await generateDynamicRules(openAiKey, project, selectedVibe, selectedStack, cwd);
+        if (aiRules) {
+            combinedRules = aiRules + `\n\n${memoryPolicy}`;
+        } else {
+            // Fallback
+            combinedRules = `# Role: Vibe Coder\n\n${selectedVibe.systemPrompt}\n\n${selectedStack.techRules}\n\n${memoryPolicy}`;
+        }
+    } else {
+        // Static Mode
+        combinedRules = `# Role: Vibe Coder\n\n${selectedVibe.systemPrompt}\n\n${selectedStack.techRules}\n\n${memoryPolicy}`;
+    }
 
     // Create Memory Bank (Shared)
     const memBankDir = path.join(cwd, 'memory-bank');
@@ -465,6 +570,11 @@ async function main() {
     const s = spinner();
     s.start('Initializing Vibe...');
     await runHackerSpinner(s);
+
+    if (process.env.OPENAI_API_KEY) {
+        const model = process.env.VIBE_AI_MODEL || 'gpt-4o';
+        s.message(`🧠 OpenAI Key Detected. Consulting Neural Core (${model})...`);
+    }
 
     try {
         const generatedFiles = await generateVibe({
