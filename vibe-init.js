@@ -294,7 +294,11 @@ async function generateDynamicRules(apiKey, project, vibe, stack, cwd) {
             model: model,
         });
 
-        return completion.choices[0].message.content;
+        return {
+            rules: completion.choices[0].message.content,
+            prompt: prompt,
+            model: model
+        };
 
     } catch (error) {
         return null; // Fallback to static
@@ -578,7 +582,7 @@ async function main() {
     }
 
     try {
-        const generatedFiles = await generateVibe({
+        const { generatedFiles, llmLog } = await generateVibe({
             project,
             vibeKey,
             stackKey,
@@ -586,6 +590,22 @@ async function main() {
             useStrictMemory,
             cwd: process.cwd()
         });
+
+        // --- Logging ---
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const logPath = path.join(process.cwd(), 'logs', `vibe-init-${project}-${timestamp}.log`);
+        const logData = {
+            timestamp: new Date().toISOString(),
+            project,
+            vibe: VIBES[vibeKey].name,
+            stack: STACKS[stackKey].name,
+            editors: ideKeys,
+            ai_data: llmLog || 'Static Mode (No Hub)'
+        };
+
+        // Asynchronous log write (fire and forget)
+        fs.mkdirSync(path.join(process.cwd(), 'logs'), { recursive: true });
+        fs.writeFileSync(logPath, JSON.stringify(logData, null, 2));
 
         s.stop('Vibe applied successfully.');
 
