@@ -300,14 +300,23 @@ async function generateDynamicRules(apiKey, project, vibe, stack, cwd) {
             model: model,
         });
 
+        const content = completion.choices?.[0]?.message?.content;
+        if (!content) throw new Error('Empty response from AI');
+
         return {
-            rules: completion.choices[0].message.content,
+            rules: content,
             prompt: prompt,
-            model: model
+            model: model,
+            success: true
         };
 
     } catch (error) {
-        return null; // Fallback to static
+        return {
+            success: false,
+            error: error.message,
+            prompt: prompt || 'Prompt generation failed',
+            model: model || 'unknown'
+        };
     }
 }
 
@@ -326,16 +335,20 @@ export async function generateVibe(options) { // Export for testing
 
     if (openAiKey) {
         // AI Mode
-        const aiRules = await generateDynamicRules(openAiKey, project, selectedVibe, selectedStack, cwd);
-        if (aiRules) {
-            combinedRules = aiRules + `\n\n${memoryPolicy}`;
+        const aiResult = await generateDynamicRules(openAiKey, project, selectedVibe, selectedStack, cwd);
+
+        if (aiResult.success) {
+            combinedRules = aiResult.rules + `\n\n${memoryPolicy}`;
+            llmLog = { ...aiResult, vibe: selectedVibe.name, stack: selectedStack.name };
         } else {
-            // Fallback
+            // Fallback with Error Log
             combinedRules = `# Role: Vibe Coder\n\n${selectedVibe.systemPrompt}\n\n${selectedStack.techRules}\n\n${memoryPolicy}`;
+            llmLog = { ...aiResult, vibe: selectedVibe.name, stack: selectedStack.name, note: 'AI Generation Failed, fell back to static.' };
         }
     } else {
         // Static Mode
         combinedRules = `# Role: Vibe Coder\n\n${selectedVibe.systemPrompt}\n\n${selectedStack.techRules}\n\n${memoryPolicy}`;
+        llmLog = { note: 'Static Mode (No API Key)', vibe: selectedVibe.name, stack: selectedStack.name };
     }
 
     // Create Memory Bank (Shared)
@@ -597,21 +610,25 @@ async function main() {
             cwd: process.cwd()
         });
 
-        // --- Logging ---
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const logPath = path.join(process.cwd(), 'logs', `vibe-init-${project}-${timestamp}.log`);
-        const logData = {
-            timestamp: new Date().toISOString(),
-            project,
-            vibe: VIBES[vibeKey].name,
-            stack: STACKS[stackKey].name,
-            editors: ideKeys,
-            ai_data: llmLog || 'Static Mode (No Hub)'
-        };
+        // --- Logging (Safe) ---
+        try {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const logPath = path.join(process.cwd(), 'logs', `vibe-init-${project}-${timestamp}.log`);
+            const logData = {
+                timestamp: new Date().toISOString(),
+                project,
+                vibe: VIBES[vibeKey].name,
+                stack: STACKS[stackKey].name,
+                editors: ideKeys,
+                ai_data: llmLog
+            };
 
-        // Asynchronous log write (fire and forget)
-        fs.mkdirSync(path.join(process.cwd(), 'logs'), { recursive: true });
-        fs.writeFileSync(logPath, JSON.stringify(logData, null, 2));
+            fs.mkdirSync(path.join(process.cwd(), 'logs'), { recursive: true });
+            fs.writeFileSync(logPath, JSON.stringify(logData, null, 2));
+        } catch (logError) {
+            // Non-blocking log failure
+            // console.error('Log write failed', logError); 
+        }
 
         s.stop('Vibe applied successfully.');
 
