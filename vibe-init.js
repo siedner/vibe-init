@@ -619,9 +619,10 @@ async function main() {
         });
 
         // --- Logging (Safe) ---
+        let logPath = 'Not Created';
         try {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const logPath = path.join(process.cwd(), 'logs', `vibe-init-${project}-${timestamp}.log`);
+            logPath = path.join(process.cwd(), 'logs', `vibe-init-${project}-${timestamp}.log`);
             const logData = {
                 timestamp: new Date().toISOString(),
                 project,
