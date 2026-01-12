@@ -7,6 +7,7 @@ import pc from 'picocolors';
 import figlet from 'figlet';
 import gradient from 'gradient-string';
 import OpenAI from 'openai';
+import 'dotenv/config'; // Load .env file
 
 // --- Configuration ---
 const ANTIGRAVITY_DIRS = [
