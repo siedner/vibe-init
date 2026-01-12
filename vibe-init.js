@@ -405,7 +405,7 @@ export async function generateVibe(options) { // Export for testing
         }
     }
 
-    return generatedFiles;
+    return { generatedFiles, llmLog };
 }
 
 function getRandomInt(max) {

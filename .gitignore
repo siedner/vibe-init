@@ -7,3 +7,4 @@ test-env-vars
 test-strict
 test-suite-rules
 *.log
+.vibe-init
