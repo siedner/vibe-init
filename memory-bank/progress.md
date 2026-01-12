@@ -18,5 +18,5 @@
 - [x] Hacker Spinner & Dynamic Outro
 
 ## Phase 4: Release [Pending]
-- [ ] Push to GitHub
+- [x] Push to GitHub <!-- id: 25 -->
 - [ ] Publish Package
