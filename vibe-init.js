@@ -657,6 +657,7 @@ async function main() {
     ${pc.green('●')} Vibe:    ${pc.cyan(VIBES[vibeKey].name)}
     ${pc.green('●')} Stack:   ${pc.yellow(STACKS[stackKey].name)}
     ${pc.green('●')} Editors: ${pc.dim(ideKeys.join(', '))}
+    ${pc.green('●')} Log:     ${pc.dim(logPath)}
     
     "${pc.italic(outroMsg)}"
     `));
