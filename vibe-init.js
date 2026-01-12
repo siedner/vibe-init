@@ -273,6 +273,9 @@ function getProjectName(isExisting) {
 
 // --- AI Logic ---
 async function generateDynamicRules(apiKey, project, vibe, stack, cwd) {
+    let prompt;
+    let model = process.env.VIBE_AI_MODEL || 'gpt-4o';
+
     try {
         const openai = new OpenAI({ apiKey });
 
@@ -286,7 +289,7 @@ async function generateDynamicRules(apiKey, project, vibe, stack, cwd) {
             } catch (e) { }
         }
 
-        const prompt = `
+        prompt = `
         Draft a system instruction file (.cursorrules) for an AI coding agent.
         Project: ${project}
         Vibe: ${vibe.name}
@@ -295,11 +298,9 @@ async function generateDynamicRules(apiKey, project, vibe, stack, cwd) {
         
         Requirements:
         1. Keep the Vibe's philosophy: "${vibe.desc}"
-        2. Analyze the dependencies and generat HIGHLY SPECIFIC rules for them (e.g. if 'zod' is present, enforce schema validation).
+        2. Analyze the dependencies and generate HIGHLY SPECIFIC rules for them (e.g. if 'zod' is present, enforce schema validation).
         3. Output ONLY the markdown content for the rules file.
         `;
-
-        const model = process.env.VIBE_AI_MODEL || 'gpt-4o';
 
         const completion = await openai.chat.completions.create({
             messages: [{ role: 'user', content: prompt }],
