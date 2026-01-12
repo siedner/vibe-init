@@ -1,0 +1,9 @@
+node_modules
+.DS_Store
+.env
+test-*
+test-vibeify
+test-env-vars
+test-strict
+test-suite-rules
+*.log

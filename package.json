@@ -1,0 +1,23 @@
+{
+    "name": "vibe-init",
+    "version": "1.0.0",
+    "description": "Antigravity God Mode Setup Wizard",
+    "type": "module",
+    "main": "vibe-init.js",
+    "scripts": {
+        "start": "node vibe-init.js"
+    },
+    "keywords": [
+        "antigravity",
+        "vibe-coding",
+        "cli"
+    ],
+    "author": "Antigravity",
+    "license": "ISC",
+    "dependencies": {
+        "@clack/prompts": "^0.7.0",
+        "picocolors": "^1.0.0",
+        "figlet": "^1.6.0",
+        "gradient-string": "^2.0.2"
+    }
+}
