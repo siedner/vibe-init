@@ -11,11 +11,16 @@ import dotenv from 'dotenv';
 import os from 'os';
 
 // --- Configuration Loading ---
+import { fileURLToPath } from 'url';
+
 // --- Configuration Loading ---
-// Priority: Process Env > Local .env > Local .vibe-init > Global .vibe-init
-dotenv.config(); // 1. Local .env
-dotenv.config({ path: path.join(process.cwd(), '.vibe-init') }); // 2. Local .vibe-init
-dotenv.config({ path: path.join(os.homedir(), '.vibe-init') }); // 3. Global .vibe-init
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Priority: Process Env > Local .env > Local .vibe-init > Script Dir .vibe-init > Global .vibe-init
+dotenv.config(); // 1. Current Dir .env
+dotenv.config({ path: path.join(process.cwd(), '.vibe-init') }); // 2. Current Dir .vibe-init
+dotenv.config({ path: path.join(__dirname, '.vibe-init') });     // 3. Script Dir .vibe-init (Tool Root)
+dotenv.config({ path: path.join(os.homedir(), '.vibe-init') }); // 4. Home Dir .vibe-init
 
 // --- Configuration ---
 const ANTIGRAVITY_DIRS = [
