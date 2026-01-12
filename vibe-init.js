@@ -7,7 +7,13 @@ import pc from 'picocolors';
 import figlet from 'figlet';
 import gradient from 'gradient-string';
 import OpenAI from 'openai';
-import 'dotenv/config'; // Load .env file
+import dotenv from 'dotenv';
+import os from 'os';
+
+// --- Configuration Loading ---
+// Load from multiple sources (Priority: current .env > home dir .env .vibe-init > process.env)
+dotenv.config({ path: path.join(os.homedir(), '.vibe-init') }); // Global
+dotenv.config(); // Local (overrides global)
 
 // --- Configuration ---
 const ANTIGRAVITY_DIRS = [
