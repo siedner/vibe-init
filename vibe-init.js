@@ -31,46 +31,50 @@ const ANTIGRAVITY_DIRS = [
 // --- 1. VIBES (Philosophy) ---
 const VIBES = {
     ship_fast: {
-        name: '🚀 Ship Fast (Indie / Vibe)',
-        desc: 'Speed > Perfection. "Act First, Ask Later".',
+        name: '🚀 Rapid Prototyping',
+        desc: 'Speed over perfection. For MVPs and indie projects.',
+        recommendedStacks: ['next_supabase', 'next_netlify', 'generic_web', 'mobile_expo'],
         systemPrompt: `
-## Philosophy: SHIP FAST
+## Philosophy: RAPID PROTOTYPING
 Your goal is to SHIP FAST. Prioritize working prototypes over perfect abstraction.
 - **Act, Don't Ask:** If the path is clear, write the code. Don't ask for permission to add a button.
 - **Vibe:** Minimalist, clean, and interactive.
 - **Testing:** Only test critical paths (e.g., payments). "Vibe Check" via browser is sufficient for UI.
 `,
-        outro: '🚀 Go break things (fast).'
+        outro: '🚀 Prototype shipped. Iterate fast.'
     },
     iron_clad: {
-        name: '🛡️ Iron Clad (Enterprise / Team)',
-        desc: 'Safety > Speed. Strict Rules. "Plan First".',
+        name: '🛡️ Enterprise Grade',
+        desc: 'Safety over speed. TDD, strict typing, documentation.',
+        recommendedStacks: ['t3_stack', 'python_fastapi', 'golang_api'],
         systemPrompt: `
-## Philosophy: IRON CLAD
+## Philosophy: ENTERPRISE GRADE
 Your goal is SAFETY and STABILITY.
 - **TDD Mandate:** You must write or request a failing test BEFORE writing implementation code.
 - **Strictness:** No silent failures. All errors must be typed and handled.
 - **Review:** Plan carefully before executing changes.
 `,
-        outro: '🛡️ Compliance Verified. System Secure.'
+        outro: '🛡️ Compliance verified. System secure.'
     },
     neural_core: {
-        name: '🧠 Neural Core (AI / Research)',
-        desc: 'Intelligence > Speed. "Research & Eval First".',
+        name: '🧠 AI & Research',
+        desc: 'Research-first. Evaluation-driven prompt engineering.',
+        recommendedStacks: ['python_fastapi', 'generic_web'],
         systemPrompt: `
-## Philosophy: NEURAL CORE
+## Philosophy: AI & RESEARCH
 Your goal is ROGUE CAPABILITY with SAFEGUARDED EXECUTION.
 - **Research First:** Verify assumptions before coding.
 - **Evaluation:** Prompt changes must be accompanied by an evaluation script.
 - **Security:** Never output API keys. Rely on \`.env\`.
 `,
-        outro: '🧠 Neural Patterns Optimized.'
+        outro: '🧠 Research complete. Findings documented.'
     },
     creative_rush: {
-        name: '🎨 Creative Rush (Agency / Design)',
-        desc: 'Aesthetics > Functionality. "Wow Factor First".',
+        name: '🎨 Creative & Design',
+        desc: 'Aesthetics first. Motion, 3D, award-winning experiences.',
+        recommendedStacks: ['next_supabase', 'next_netlify', 'generic_web'],
         systemPrompt: `
-## Philosophy: CREATIVE RUSH
+## Philosophy: CREATIVE & DESIGN
 Your goal is to create AWWWARDS-WINNING digital experiences.
 - **Persona:** You are a Creative Technologist (50% Dev, 50% Artist).
 - **Tech Stack:**
@@ -82,13 +86,14 @@ Your goal is to create AWWWARDS-WINNING digital experiences.
   - Use custom cursors and noise textures to add depth.
   - Prioritize motion fidelity (60fps) over pure lighthouse scores if necessary.
 `,
-        outro: '🎨 Make it pop. Dazzle them.'
+        outro: '🎨 Experience crafted. Dazzle delivered.'
     },
     pixel_perfect: {
-        name: '👾 Pixel Perfect (Game Dev)',
-        desc: 'Gameplay > Graphics. "Juice it up".',
+        name: '👾 Game Development',
+        desc: 'Gameplay mechanics. Game feel and performance focus.',
+        recommendedStacks: ['web_game_phaser', 'godot_engine'],
         systemPrompt: `
-## Philosophy: PIXEL PERFECT
+## Philosophy: GAME DEVELOPMENT
 Your goal is to create ADDICTIVE GAMEPLAY loops.
 - **Persona:** You are a Gameplay Engineer (Mechanics First).
 - **Rules:**
@@ -96,52 +101,56 @@ Your goal is to create ADDICTIVE GAMEPLAY loops.
   - **Input:** Input handling must be decoupled from game logic.
   - **Performance:** Zero allocations in the update loop. Use Object Pooling.
 `,
-        outro: '👾 High Score Saved. insert coin.'
+        outro: '👾 Game loop polished. Ready to play.'
     },
     oss_maintainer: {
-        name: '📖 OSS Maintainer (Clean Code)',
-        desc: 'Readability > Cleverness. "Explain it like I am 5".',
+        name: '📖 Open Source',
+        desc: 'Maintainability first. JSDoc, conventional commits, clarity.',
+        recommendedStacks: ['generic_web', 'python_fastapi', 'golang_api'],
         systemPrompt: `
-## Philosophy: OSS MAINTAINER
+## Philosophy: OPEN SOURCE
 Your goal is LONG-TERM MAINTAINABILITY.
 - **Documentation:** Every exported function MUST have JSDoc/Docstrings explaining input/output.
 - **Commits:** Use Conventional Commits (feat:, fix:, docs:) exclusively.
 - **Simplicity:** Prefer verbose, clear code over clever one-liners.
 - **No Magic:** Avoid "magic numbers" or hidden side effects. Explicit is better than implicit.
 `,
-        outro: '📖 Readability Optimized. Contributors welcome.'
+        outro: '📖 Code documented. Contributors welcome.'
     },
     a11y_advocate: {
-        name: '♿ A11y Advocate (Accessibility)',
-        desc: 'Inclusion > Features. "Keyboard for everything".',
+        name: '♿ Accessibility First',
+        desc: 'WCAG 2.1 AA compliance. Semantic HTML, keyboard nav.',
+        recommendedStacks: ['next_supabase', 'next_netlify', 'generic_web', 't3_stack'],
         systemPrompt: `
-## Philosophy: A11Y ADVOCATE
+## Philosophy: ACCESSIBILITY FIRST
 Your goal is WCAG 2.1 AA COMPLIANCE.
 - **Semantic HTML:** Never use a \`div\` where a \`button\`, \`nav\`, or \`section\` works.
 - **Keyboard:** All interactions must be usable via Tab/Enter/Space. Focus states must be visible.
 - **Attributes:** Ensure all images have \`alt\` text and inputs have \`labels\`.
 - **Testing:** When asked to test, check screen-reader compatibility first.
 `,
-        outro: '♿ Access Granted for Everyone.'
+        outro: '♿ Accessible to all. Inclusion achieved.'
     },
     data_wizard: {
-        name: '🧙‍♂️ Data Wizard (Analysis)',
-        desc: 'Insights > Code. "Reproducible Notebooks".',
+        name: '📊 Data Science',
+        desc: 'Reproducible notebooks. Pandas, visualization, analysis.',
+        recommendedStacks: ['python_fastapi'],
         systemPrompt: `
-## Philosophy: DATA WIZARD
+## Philosophy: DATA SCIENCE
 Your goal is REPRODUCIBLE INSIGHTS.
 - **Visualization:** Prefer Plotly/Seaborn. Always label axes and add titles.
 - **Data Safety:** Never print full dataframes. Use \`.head()\` or \`.info()\`.
 - **Performance:** Vectorize operations (pandas/numpy) instead of looping.
 - **Structure:** If in a notebook, keep cells independent. No hidden state.
 `,
-        outro: '🧙‍♂️ Hypothesis: Confirmed.'
+        outro: '📊 Analysis complete. Insights documented.'
     },
     ghost_operator: {
-        name: '👻 Ghost Operator (Scraping/RPA)',
-        desc: 'Stealth > Speed. Persistent Sessions.',
+        name: '🤖 Browser Automation',
+        desc: 'Stealth scraping. Persistent sessions, anti-detection.',
+        recommendedStacks: ['python_scraper', 'node_browser'],
         systemPrompt: `
-## Philosophy: GHOST OPERATOR
+## Philosophy: BROWSER AUTOMATION
 Your goal is INVISIBLE EXECUTION using PERSISTENT SESSIONS.
 
 ### 1. The "Login Logic" (Crucial)
@@ -159,7 +168,7 @@ You must ALWAYS implement the "Check-Login-Save" loop:
 - Never hardcode passwords. Use \`process.env.PASSWORD\`.
 - Reuse cookies from \`auth.json\` to avoid triggering anti-bot login challenges.
 `,
-        outro: '👻 Ghost Mode: Session persistence active.'
+        outro: '🤖 Automation complete. No traces left.'
     }
 };
 
@@ -953,11 +962,33 @@ async function main() {
     }
 
     if (!stackKey) {
+        // Get recommended stacks for selected vibe
+        const selectedVibe = VIBES[vibeKey];
+        const recommendedKeys = selectedVibe.recommendedStacks || [];
+
+        // Build options: Recommended first, then Others
+        const recommendedOptions = recommendedKeys
+            .filter(key => STACKS[key])
+            .map(key => ({
+                value: key,
+                label: `⭐ ${STACKS[key].name}`,
+                hint: `Recommended for ${selectedVibe.name}`
+            }));
+
+        const otherOptions = Object.entries(STACKS)
+            .filter(([key]) => !recommendedKeys.includes(key))
+            .map(([key, val]) => ({
+                value: key,
+                label: val.name,
+                hint: val.desc
+            }));
+
         while (true) {
             stackKey = await select({
-                message: 'Choose your Tech Stack:',
+                message: `Choose your Tech Stack (${recommendedOptions.length} recommended for ${selectedVibe.name}):`,
                 options: [
-                    ...Object.entries(STACKS).map(([key, val]) => ({ value: key, label: val.name, hint: val.desc })),
+                    ...recommendedOptions,
+                    ...otherOptions,
                     { value: 'custom', label: '🔧 Custom Stack', hint: 'Describe it yourself' },
                     { value: 'help', label: 'ℹ️  READ ME / HELP', hint: 'Learn about Stacks' }
                 ],
