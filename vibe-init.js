@@ -850,13 +850,36 @@ function analyzeProject(cwd) {
     return analysis;
 }
 
-// --- AI Logic ---
-async function generateDynamicRules(apiKey, project, vibe, stack, cwd, analysis = null) {
+// --- AI Logic (Multi-Provider Support) ---
+function getLLMProvider() {
+    // Priority: OpenAI > Groq
+    if (process.env.OPENAI_API_KEY) {
+        return {
+            name: 'OpenAI',
+            apiKey: process.env.OPENAI_API_KEY,
+            model: process.env.VIBE_AI_MODEL || 'gpt-4o',
+            baseURL: undefined // default OpenAI
+        };
+    }
+    if (process.env.GROQ_API_KEY) {
+        return {
+            name: 'Groq',
+            apiKey: process.env.GROQ_API_KEY,
+            model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+            baseURL: 'https://api.groq.com/openai/v1'
+        };
+    }
+    return null;
+}
+
+async function generateDynamicRules(provider, project, vibe, stack, cwd, analysis = null) {
     let prompt;
-    let model = process.env.VIBE_AI_MODEL || 'gpt-4o';
 
     try {
-        const openai = new OpenAI({ apiKey });
+        const openai = new OpenAI({
+            apiKey: provider.apiKey,
+            baseURL: provider.baseURL
+        });
 
         // Use analysis if provided, fallback to basic context
         const pkgContext = getVitalContext(cwd);
@@ -903,7 +926,7 @@ Start immediately with: # Project Rules for ${project}
 
         const completion = await openai.chat.completions.create({
             messages: [{ role: 'user', content: prompt }],
-            model: model,
+            model: provider.model,
         });
 
         const content = completion.choices?.[0]?.message?.content;
@@ -912,7 +935,8 @@ Start immediately with: # Project Rules for ${project}
         return {
             rules: content,
             prompt: prompt,
-            model: model,
+            model: provider.model,
+            provider: provider.name,
             success: true
         };
 
@@ -921,7 +945,8 @@ Start immediately with: # Project Rules for ${project}
             success: false,
             error: error.message,
             prompt: prompt || 'Prompt generation failed',
-            model: model || 'unknown'
+            model: provider.model,
+            provider: provider.name
         };
     }
 }
@@ -951,14 +976,14 @@ export async function generateVibe(options) { // Export for testing
         ? analysis.structure.map(s => `- ${s}`).join('\n')
         : '- Standard structure';
 
-    // --- AI Hybrid Check ---
+    // --- AI Hybrid Check (Multi-Provider) ---
     let combinedRules;
     let llmLog;
-    const openAiKey = process.env.OPENAI_API_KEY;
+    const llmProvider = getLLMProvider();
 
-    if (openAiKey) {
+    if (llmProvider) {
         // AI Mode - pass analysis for richer context
-        const aiResult = await generateDynamicRules(openAiKey, project, selectedVibe, selectedStack, cwd, analysis);
+        const aiResult = await generateDynamicRules(llmProvider, project, selectedVibe, selectedStack, cwd, analysis);
 
         if (aiResult.success) {
             combinedRules = aiResult.rules + `\n\n${memoryPolicy}`;
@@ -1614,9 +1639,9 @@ async function main() {
     s.start('Initializing Vibe...');
     await runHackerSpinner(s);
 
-    if (process.env.OPENAI_API_KEY) {
-        const model = process.env.VIBE_AI_MODEL || 'gpt-4o';
-        s.message(`🧠 OpenAI Key Detected. Consulting Neural Core (${model})...`);
+    const llmProviderInfo = getLLMProvider();
+    if (llmProviderInfo) {
+        s.message(`🧠 ${llmProviderInfo.name} Detected. Consulting Neural Core (${llmProviderInfo.model})...`);
     }
 
     try {
