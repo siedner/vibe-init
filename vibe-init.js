@@ -33,7 +33,7 @@ const VIBES = {
     ship_fast: {
         name: '🚀 Rapid Prototyping',
         desc: 'Speed over perfection. For MVPs and indie projects.',
-        recommendedStacks: ['next_supabase', 'next_netlify', 'generic_web', 'mobile_expo', 'nodejs_cli'],
+        recommendedStacks: ['next_supabase', 'next_netlify', 'generic_web', 'mobile_expo', 'mobile_flutter', 'android_kotlin', 'nodejs_cli'],
         systemPrompt: `
 ## Philosophy: RAPID PROTOTYPING
 Your goal is to SHIP FAST. Prioritize working prototypes over perfect abstraction.
@@ -286,6 +286,54 @@ DATABASE_URL=postgresql://user:password@localhost:5432/dbname`
   - **Navigation:** Use \`<Stack>\` and \`<Tabs>\` from Expo Router.
 `,
         envVars: `EXPO_PUBLIC_API_URL=`
+    },
+    mobile_flutter: {
+        name: 'Flutter (Cross-Platform)',
+        desc: 'Dart, Material Design, single codebase for iOS/Android',
+        techRules: `
+## Tech Stack: Flutter
+- **Language:** Dart (Null Safety Required)
+- **Framework:** Flutter 3.x+
+- **State Management:** Riverpod (recommended) or Provider/Bloc.
+- **Architecture:**
+  - Use **Feature-First** folder structure: \`lib/features/auth/\`, \`lib/features/home/\`.
+  - Separate UI from logic: Widgets should not contain business logic.
+  - Use \`const\` constructors wherever possible for performance.
+- **Styling:**
+  - Use Material 3 (\`useMaterial3: true\`).
+  - Define colors in \`ThemeData\`, not inline.
+- **CRITICAL RULES:**
+  - **No \`print()\`:** Use \`debugPrint()\` or a logger package.
+  - **Async:** Always handle errors in \`Future\` and \`Stream\`.
+  - **Platform:** Use \`Platform.isAndroid\` / \`Platform.isIOS\` for platform-specific code.
+  - **Navigation:** Use \`go_router\` for declarative routing.
+`,
+        envVars: ``
+    },
+    android_kotlin: {
+        name: 'Android Native (Kotlin)',
+        desc: 'Kotlin, Jetpack Compose, Material Design 3',
+        techRules: `
+## Tech Stack: Android Native (Kotlin)
+- **Language:** Kotlin (Strict null safety)
+- **UI:** Jetpack Compose (Declarative UI)
+- **Architecture:** MVVM with ViewModel + StateFlow
+- **Dependencies:**
+  - **DI:** Hilt (Dagger-based)
+  - **Networking:** Retrofit + OkHttp
+  - **Database:** Room
+  - **Navigation:** Navigation Compose
+- **CRITICAL RULES:**
+  - **No XML Layouts:** Use Jetpack Compose exclusively for new screens.
+  - **Coroutines:** Use \`viewModelScope\` for async operations.
+  - **State:** UI state should be exposed as \`StateFlow\` from ViewModel.
+  - **Theming:** Use Material 3 dynamic colors (\`dynamicColorScheme()\`).
+  - **Lifecycle:** Respect lifecycle with \`repeatOnLifecycle\` for collecting flows.
+- **Testing:**
+  - Unit tests with JUnit5 + MockK.
+  - UI tests with Compose Testing.
+`,
+        envVars: `ANDROID_API_KEY=`
     },
     t3_stack: {
         name: 'T3 Stack (Next.js + tRPC)',
