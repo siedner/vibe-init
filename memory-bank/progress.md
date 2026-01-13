@@ -27,3 +27,10 @@
 - [x] Implement `GEMINI.md` for proper Antigravity loading
 - [x] Implement Modern Cursor, Claude, Windsurf, Aider configs
 - [x] Fix "Read First" Instruction Logic
+
+## Phase 6: CLI Tool Stack [Completed]
+- [x] Research popular CLI tools (Claude Code, GitHub Copilot CLI, Wrangler)
+- [x] Add `nodejs_cli` stack with @clack/prompts template
+- [x] Include UX best practices and library recommendations
+- [x] Add starter files (my-cli.js, package.json)
+

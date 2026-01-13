@@ -2,17 +2,19 @@
 *AGENT INSTRUCTION: Update this file after every successful task.*
 
 ## Current Focus
-- **Task:** Finalizing Agent Configuration Standards
-- **Current Step:** Completed. Changes pushed to GitHub.
+- **Task:** UX Improvements Complete
+- **Current Step:** Added back navigation and fixed review default.
 
 ## Recent Changes
-- [Today]: Implemented support for 2025 AI Agent Standards:
-  - `AGENTS.md` (Universal)
-  - `GEMINI.md` (Antigravity/Gemini CLI)
-  - `CLAUDE.md`, `.windsurfrules`, `.aider.conf.yml`
-  - Modern `.cursor/rules` structure
-- [Today]: Fixed "Read First" bootstrap logic for all agents.
-- [Today]: Pushed update `feat: add support for modern AI agent config files`.
+- [Today]: Added "← Back" navigation to selection flow using state machine pattern:
+  - Stack selection → back to Vibe
+  - Editors selection → back to Stack  
+  - Memory Policy → back to Editors
+- [Today]: Changed "Review generated files?" default to No.
+- [Today]: Refactored selection flow from nested loops to clean state machine.
+- [Earlier]: Added `nodejs_cli` CLI Tool stack.
 
 ## Next Steps
 - Publish to npm (future).
+
+

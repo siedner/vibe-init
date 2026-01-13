@@ -33,7 +33,7 @@ const VIBES = {
     ship_fast: {
         name: '🚀 Rapid Prototyping',
         desc: 'Speed over perfection. For MVPs and indie projects.',
-        recommendedStacks: ['next_supabase', 'next_netlify', 'generic_web', 'mobile_expo'],
+        recommendedStacks: ['next_supabase', 'next_netlify', 'generic_web', 'mobile_expo', 'nodejs_cli'],
         systemPrompt: `
 ## Philosophy: RAPID PROTOTYPING
 Your goal is to SHIP FAST. Prioritize working prototypes over perfect abstraction.
@@ -59,7 +59,7 @@ Your goal is SAFETY and STABILITY.
     neural_core: {
         name: '🧠 AI & Research',
         desc: 'Research-first. Evaluation-driven prompt engineering.',
-        recommendedStacks: ['python_fastapi', 'generic_web'],
+        recommendedStacks: ['python_fastapi', 'generic_web', 'nodejs_cli'],
         systemPrompt: `
 ## Philosophy: AI & RESEARCH
 Your goal is ROGUE CAPABILITY with SAFEGUARDED EXECUTION.
@@ -106,7 +106,7 @@ Your goal is to create ADDICTIVE GAMEPLAY loops.
     oss_maintainer: {
         name: '📖 Open Source',
         desc: 'Maintainability first. JSDoc, conventional commits, clarity.',
-        recommendedStacks: ['generic_web', 'python_fastapi', 'golang_api'],
+        recommendedStacks: ['generic_web', 'python_fastapi', 'golang_api', 'nodejs_cli'],
         systemPrompt: `
 ## Philosophy: OPEN SOURCE
 Your goal is LONG-TERM MAINTAINABILITY.
@@ -429,6 +429,123 @@ export class AuthHelper {
     } catch {
       return false;
     }
+  }
+}
+`
+        }
+    },
+    nodejs_cli: {
+        name: 'Node.js CLI Tool',
+        desc: 'Beautiful terminal apps with Clack, Ink, or Commander',
+        techRules: `
+## Tech Stack: Node.js CLI Tool
+- **Runtime:** Node.js 20+ (ESM Modules)
+- **Module System:** Use \`"type": "module"\` in package.json. No CommonJS.
+- **Entry Point:** Add shebang \`#!/usr/bin/env node\` and \`"bin"\` field in package.json.
+
+### Library Recommendations
+| Use Case | Library |
+|----------|---------|
+| **Interactive Prompts** | \`@clack/prompts\` (beautiful, minimal) |
+| **Complex TUI** | \`ink\` (React for terminal) |
+| **Arg Parsing** | \`commander\` (Git-style) or \`yargs\` (feature-rich) |
+| **Colors** | \`picocolors\` (fastest) or \`chalk\` (popular) |
+| **Spinners** | \`ora\` or Clack's built-in spinner |
+| **ASCII Art** | \`figlet\` + \`gradient-string\` |
+
+### UX Rules
+- **Graceful Exit:** Always handle SIGINT (Ctrl+C) with cleanup.
+- **Color Mode:** Respect \`NO_COLOR\` env variable.
+- **JSON Output:** Offer \`--json\` flag for scripting/piping.
+- **Exit Codes:** Use 0 for success, 1 for errors.
+- **Progress:** Show spinners for operations >500ms.
+- **Confirmations:** Always confirm destructive actions.
+
+### Structure (Simple CLI)
+\`\`\`
+my-cli/
+├── my-cli.js          # Entry point with shebang
+├── lib/               # Core logic (optional)
+├── package.json       # "bin": { "my-cli": "./my-cli.js" }
+└── README.md
+\`\`\`
+
+### Patterns Used By Industry CLIs
+- **Claude Code / GitHub Copilot CLI:** Ink (React TUI)
+- **create-next-app / create-vite:** @clack/prompts
+- **Heroku / Salesforce CLI:** oclif (plugin architecture)
+`,
+        envVars: ``,
+        extraFiles: {
+            'my-cli.js': `#!/usr/bin/env node
+
+import { intro, outro, text, select, confirm, spinner, isCancel, cancel } from '@clack/prompts';
+import pc from 'picocolors';
+
+// Handle Ctrl+C gracefully
+process.on('SIGINT', () => {
+    console.log('\\n' + pc.yellow('Operation cancelled.'));
+    process.exit(0);
+});
+
+async function main() {
+    intro(pc.cyan('✨ My CLI Tool'));
+
+    const name = await text({
+        message: 'What is your name?',
+        placeholder: 'Anonymous',
+        validate(value) {
+            if (!value) return 'Name is required';
+        }
+    });
+
+    if (isCancel(name)) {
+        cancel('Operation cancelled.');
+        process.exit(0);
+    }
+
+    const action = await select({
+        message: 'What would you like to do?',
+        options: [
+            { value: 'greet', label: '👋 Say Hello' },
+            { value: 'joke', label: '😂 Tell a Joke' },
+        ],
+    });
+
+    if (isCancel(action)) {
+        cancel('Operation cancelled.');
+        process.exit(0);
+    }
+
+    const s = spinner();
+    s.start('Processing...');
+    await new Promise(r => setTimeout(r, 1000));
+    s.stop('Done!');
+
+    if (action === 'greet') {
+        console.log(pc.green(\`\\n👋 Hello, \${name}!\\n\`));
+    } else {
+        console.log(pc.magenta(\`\\n😂 Why do programmers prefer dark mode? Because light attracts bugs!\\n\`));
+    }
+
+    outro(pc.green('Thanks for using My CLI Tool! 🚀'));
+}
+
+main().catch(console.error);
+`,
+            'package.json': `{
+  "name": "my-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "my-cli": "./my-cli.js"
+  },
+  "scripts": {
+    "start": "node my-cli.js"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "picocolors": "^1.0.0"
   }
 }
 `
@@ -1071,122 +1188,155 @@ async function main() {
         note(`${pc.bold(project)}`, 'Project Name Detected');
     }
 
-    // 3. Select VIBE (Philosophy)
-    let vibeKey;
-    while (true) {
-        vibeKey = await select({
-            message: 'Choose your Vibe (Philosophy):',
-            options: [
-                ...Object.entries(VIBES).map(([key, val]) => ({ value: key, label: val.name, hint: val.desc })),
-                { value: 'help', label: 'ℹ️  READ ME / HELP', hint: 'Learn how this tool works' }
-            ],
-        });
-
-        if (isCancel(vibeKey)) { cancel('Cancelled.'); process.exit(0); }
-
-        if (vibeKey === 'help') {
-            printHelp();
-            continue;
-        }
-        break;
-    }
-
-    // 4. Select STACK (Tech) - Auto-detect attempt
+    // --- Selection Flow with Back Navigation (State Machine) ---
+    let step = 'vibe'; // States: vibe, stack, editors, memory, done
+    let vibeKey, stackKey, ideKeys, useStrictMemory;
     const detectedStack = detectStack();
-    let stackKey = detectedStack;
 
-    if (detectedStack) {
-        note(`${STACKS[detectedStack].name}`, 'Tech Stack Detected');
-        const confirmStack = await confirm({ message: `Use detected stack?` });
-        if (!confirmStack) stackKey = null;
-    }
-
-    if (!stackKey) {
-        // Get recommended stacks for selected vibe
-        const selectedVibe = VIBES[vibeKey];
-        const recommendedKeys = selectedVibe.recommendedStacks || [];
-
-        // Build options: Recommended first, then Others
-        const recommendedOptions = recommendedKeys
-            .filter(key => STACKS[key])
-            .map(key => ({
-                value: key,
-                label: `⭐ ${STACKS[key].name}`,
-                hint: `Recommended for ${selectedVibe.name}`
-            }));
-
-        const otherOptions = Object.entries(STACKS)
-            .filter(([key]) => !recommendedKeys.includes(key))
-            .map(([key, val]) => ({
-                value: key,
-                label: val.name,
-                hint: val.desc
-            }));
-
-        while (true) {
-            stackKey = await select({
-                message: `Choose your Tech Stack (${recommendedOptions.length} recommended for ${selectedVibe.name}):`,
-                options: [
-                    ...recommendedOptions,
-                    ...otherOptions,
-                    { value: 'custom', label: '🔧 Custom Stack', hint: 'Describe it yourself' },
-                    { value: 'help', label: 'ℹ️  READ ME / HELP', hint: 'Learn about Stacks' }
-                ],
-            });
-            if (isCancel(stackKey)) { cancel('Cancelled.'); process.exit(0); }
-
-            if (stackKey === 'help') {
-                printHelp();
-                continue;
+    while (step !== 'done') {
+        switch (step) {
+            // --- STEP: VIBE ---
+            case 'vibe': {
+                vibeKey = await select({
+                    message: 'Choose your Vibe (Philosophy):',
+                    options: [
+                        ...Object.entries(VIBES).map(([key, val]) => ({ value: key, label: val.name, hint: val.desc })),
+                        { value: 'help', label: 'ℹ️  READ ME / HELP', hint: 'Learn how this tool works' }
+                    ],
+                });
+                if (isCancel(vibeKey)) { cancel('Cancelled.'); process.exit(0); }
+                if (vibeKey === 'help') { printHelp(); break; }
+                step = 'stack';
+                break;
             }
 
-            if (stackKey === 'custom') {
-                const customStackName = await text({
-                    message: 'Name your stack (e.g. "Rust + Actix"):',
-                    validate: (val) => val.length === 0 ? 'Name is required!' : undefined
-                });
-                if (isCancel(customStackName)) { cancel('Cancelled.'); process.exit(0); }
+            // --- STEP: STACK ---
+            case 'stack': {
+                // Try auto-detect first
+                if (detectedStack && stackKey === undefined) {
+                    note(`${STACKS[detectedStack].name}`, 'Tech Stack Detected');
+                    const confirmStack = await confirm({ message: `Use detected stack?` });
+                    if (isCancel(confirmStack)) { cancel('Cancelled.'); process.exit(0); }
+                    if (confirmStack) {
+                        stackKey = detectedStack;
+                        step = 'editors';
+                        break;
+                    }
+                }
 
-                const customContext = await text({
-                    message: 'List key libraries (comma separated):',
-                    placeholder: 'e.g. actix-web, tokio, serde'
-                });
-                if (isCancel(customContext)) { cancel('Cancelled.'); process.exit(0); }
+                // Manual selection
+                const selectedVibe = VIBES[vibeKey];
+                const recommendedKeys = selectedVibe.recommendedStacks || [];
 
-                STACKS['custom'] = {
-                    name: customStackName,
-                    desc: 'User defined stack',
-                    techRules: `## Tech Stack: ${customStackName}\n- Key Libraries: ${customContext || 'None specified'}\n- Rule: Follow best practices for these libraries.`,
-                    envVars: ''
-                };
+
+                const recommendedOptions = recommendedKeys
+                    .filter(key => STACKS[key])
+                    .map(key => ({
+                        value: key,
+                        label: `⭐ ${STACKS[key].name}`,
+                        hint: `Recommended for ${selectedVibe.name}`
+                    }));
+
+                const otherOptions = Object.entries(STACKS)
+                    .filter(([key]) => !recommendedKeys.includes(key))
+                    .map(([key, val]) => ({
+                        value: key,
+                        label: val.name,
+                        hint: val.desc
+                    }));
+
+                stackKey = await select({
+                    message: `Choose your Tech Stack (${recommendedOptions.length} recommended for ${selectedVibe.name}):`,
+                    options: [
+                        ...recommendedOptions,
+                        ...otherOptions,
+                        { value: 'custom', label: '🔧 Custom Stack', hint: 'Describe it yourself' },
+                        { value: 'help', label: 'ℹ️  READ ME / HELP', hint: 'Learn about Stacks' },
+                        { value: '__back__', label: '← Back', hint: 'Go back to Vibe selection' },
+                    ],
+                });
+                if (isCancel(stackKey)) { cancel('Cancelled.'); process.exit(0); }
+
+                if (stackKey === '__back__') { step = 'vibe'; break; }
+                if (stackKey === 'help') { printHelp(); break; }
+
+                if (stackKey === 'custom') {
+                    const customStackName = await text({
+                        message: 'Name your stack (e.g. "Rust + Actix"):',
+                        validate: (val) => val.length === 0 ? 'Name is required!' : undefined
+                    });
+                    if (isCancel(customStackName)) { cancel('Cancelled.'); process.exit(0); }
+
+                    const customContext = await text({
+                        message: 'List key libraries (comma separated):',
+                        placeholder: 'e.g. actix-web, tokio, serde'
+                    });
+                    if (isCancel(customContext)) { cancel('Cancelled.'); process.exit(0); }
+
+                    STACKS['custom'] = {
+                        name: customStackName,
+                        desc: 'User defined stack',
+                        techRules: `## Tech Stack: ${customStackName}\n- Key Libraries: ${customContext || 'None specified'}\n- Rule: Follow best practices for these libraries.`,
+                        envVars: ''
+                    };
+                }
+                step = 'editors';
+                break;
             }
-            break;
+
+            // --- STEP: EDITORS ---
+            case 'editors': {
+                ideKeys = await multiselect({
+                    message: 'Which AI Editors do you use?',
+                    options: [
+                        { value: 'agents_md', label: 'AGENTS.md (Universal)', hint: 'Cross-tool standard (Copilot, Roo, etc.)' },
+                        { value: 'gemini', label: 'Gemini CLI / Antigravity', hint: 'GEMINI.md + .agent/' },
+                        { value: 'claude', label: 'Claude Code', hint: 'CLAUDE.md' },
+                        { value: 'cursor', label: 'Cursor', hint: '.cursor/rules/' },
+                        { value: 'cline', label: 'Cline / Roo Code', hint: '.clinerules' },
+                        { value: 'windsurf', label: 'Windsurf', hint: '.windsurfrules' },
+                        { value: 'aider', label: 'Aider', hint: 'CONVENTIONS.md' },
+                        { value: '__back__', label: '← Back', hint: 'Go back to Stack selection' },
+                    ],
+                    required: false,
+                    initialValues: ['agents_md', 'gemini', 'cursor']
+                });
+                if (isCancel(ideKeys)) { cancel('Cancelled.'); process.exit(0); }
+
+                if (ideKeys.includes('__back__')) {
+                    stackKey = undefined; // Reset for re-selection
+                    step = 'stack';
+                    break;
+                }
+
+                // Filter out __back__ and validate
+                ideKeys = ideKeys.filter(k => k !== '__back__');
+                if (ideKeys.length === 0) {
+                    note('Please select at least one editor.', '⚠️');
+                    break;
+                }
+                step = 'memory';
+                break;
+            }
+
+            // --- STEP: MEMORY POLICY ---
+            case 'memory': {
+                useStrictMemory = await select({
+                    message: 'Memory Policy:',
+                    options: [
+                        { value: true, label: '📝 Strict (Recommended)', hint: 'Forces AI to update memory-bank after each task' },
+                        { value: false, label: '😎 Casual', hint: 'Gentle reminder to update memory' },
+                        { value: '__back__', label: '← Back', hint: 'Go back to Editor selection' },
+                    ],
+                });
+                if (isCancel(useStrictMemory)) { cancel('Cancelled.'); process.exit(0); }
+
+                if (useStrictMemory === '__back__') { step = 'editors'; break; }
+                step = 'done';
+                break;
+            }
         }
     }
-
-    // 5. Select Editors
-    const ideKeys = await multiselect({
-        message: 'Which AI Editors do you use?',
-        options: [
-            { value: 'agents_md', label: 'AGENTS.md (Universal)', hint: 'Cross-tool standard (Copilot, Roo, etc.)' },
-            { value: 'gemini', label: 'Gemini CLI / Antigravity', hint: 'GEMINI.md + .agent/' },
-            { value: 'claude', label: 'Claude Code', hint: 'CLAUDE.md' },
-            { value: 'cursor', label: 'Cursor', hint: '.cursor/rules/' },
-            { value: 'cline', label: 'Cline / Roo Code', hint: '.clinerules' },
-            { value: 'windsurf', label: 'Windsurf', hint: '.windsurfrules' },
-            { value: 'aider', label: 'Aider', hint: 'CONVENTIONS.md' },
-        ],
-        required: true,
-        initialValues: ['agents_md', 'gemini', 'cursor']
-    });
-    if (isCancel(ideKeys)) { cancel('Cancelled.'); process.exit(0); }
-
-    // 6. Memory Policy
-    const useStrictMemory = await confirm({
-        message: 'Enable Strict Memory Policy? (Forces AI to update memory)',
-        initialValue: true
-    });
-    if (isCancel(useStrictMemory)) { cancel('Cancelled.'); process.exit(0); }
 
     // --- Generation Logic ---
     const s = spinner();
@@ -1232,7 +1382,7 @@ async function main() {
         s.stop('Vibe applied successfully.');
 
         // --- Preview Loop ---
-        let viewFiles = await confirm({ message: 'Would you like to review the generated files?' });
+        let viewFiles = await confirm({ message: 'Would you like to review the generated files?', initialValue: false });
         if (isCancel(viewFiles)) process.exit(0);
 
         while (viewFiles) {
