@@ -642,8 +642,49 @@ export async function generateVibe(options) { // Export for testing
         }
     }
 
-    // Generate Editor Configs
-    if (ideKeys.includes('antigravity')) {
+    // --- Generate Cross-Tool Universal Standard ---
+    // AGENTS.md - Works with Roo Code, GitHub Copilot, Cursor, and others
+    if (ideKeys.includes('agents_md')) {
+        const agentsMdContent = `# Agent Guidelines for ${project}
+
+## Session Start Protocol
+**CRITICAL**: Before starting ANY task, you MUST:
+1. Read \`memory-bank/activeContext.md\` for current project context
+2. Review \`memory-bank/projectbrief.md\` for architecture decisions
+
+## Coding Philosophy
+${selectedVibe.systemPrompt}
+
+## Tech Stack Rules
+${selectedStack.techRules}
+
+${memoryPolicy}
+`;
+        fs.writeFileSync(path.join(cwd, 'AGENTS.md'), agentsMdContent);
+        generatedFiles.push({ path: 'AGENTS.md', content: agentsMdContent });
+    }
+
+    // --- Gemini CLI / Antigravity ---
+    if (ideKeys.includes('gemini')) {
+        // Create GEMINI.md at project root (auto-loaded by Gemini CLI)
+        const geminiMdContent = `# Gemini Agent Instructions for ${project}
+
+## First Steps (MANDATORY)
+At the start of EVERY session, read these files:
+1. \`memory-bank/activeContext.md\` - Current task context
+2. \`memory-bank/projectbrief.md\` - Project architecture
+
+## After Completing Work
+Update \`memory-bank/activeContext.md\` with your changes.
+
+---
+
+${combinedRules}
+`;
+        fs.writeFileSync(path.join(cwd, 'GEMINI.md'), geminiMdContent);
+        generatedFiles.push({ path: 'GEMINI.md', content: geminiMdContent });
+
+        // Also create .agent/ structure for Antigravity IDE
         for (const dir of ANTIGRAVITY_DIRS) {
             const fullPath = path.join(cwd, dir);
             if (!fs.existsSync(fullPath)) fs.mkdirSync(fullPath, { recursive: true });
@@ -800,13 +841,112 @@ Trigger: /refactor
             generatedFiles.push({ path: wfPath, content: workflowContent });
         }
     }
+
+    // --- Claude Code ---
+    if (ideKeys.includes('claude')) {
+        const claudeMdContent = `# Claude Code Instructions for ${project}
+
+## Session Protocol (MANDATORY)
+Before starting ANY task:
+1. Read \`memory-bank/activeContext.md\` for current context
+2. Check \`memory-bank/projectbrief.md\` for architecture decisions
+
+After completing work:
+- Update \`memory-bank/activeContext.md\` with your changes
+
+---
+
+${combinedRules}
+`;
+        fs.writeFileSync(path.join(cwd, 'CLAUDE.md'), claudeMdContent);
+        generatedFiles.push({ path: 'CLAUDE.md', content: claudeMdContent });
+    }
+
+    // --- Cursor (Modern .cursor/rules/ structure) ---
     if (ideKeys.includes('cursor')) {
+        // Create .cursor/rules/ directory structure
+        const cursorRulesDir = path.join(cwd, '.cursor', 'rules');
+        if (!fs.existsSync(cursorRulesDir)) fs.mkdirSync(cursorRulesDir, { recursive: true });
+
+        // Core rules file (mdc format)
+        const cursorCoreContent = `---
+description: Core project rules for ${project}
+globs: ["**/*"]
+---
+
+## Session Start Protocol
+Read \`memory-bank/activeContext.md\` before starting work.
+
+${selectedVibe.systemPrompt}
+
+${memoryPolicy}
+`;
+        const cursorCorePath = '.cursor/rules/00-core.mdc';
+        fs.writeFileSync(path.join(cwd, cursorCorePath), cursorCoreContent);
+        generatedFiles.push({ path: cursorCorePath, content: cursorCoreContent });
+
+        // Tech stack rules
+        const cursorTechContent = `---
+description: Tech stack rules for ${selectedStack.name}
+globs: ["**/*"]
+---
+
+${selectedStack.techRules}
+`;
+        const cursorTechPath = '.cursor/rules/01-tech-stack.mdc';
+        fs.writeFileSync(path.join(cwd, cursorTechPath), cursorTechContent);
+        generatedFiles.push({ path: cursorTechPath, content: cursorTechContent });
+
+        // Also create legacy .cursorrules for backwards compatibility
         fs.writeFileSync(path.join(cwd, '.cursorrules'), combinedRules);
         generatedFiles.push({ path: '.cursorrules', content: combinedRules });
     }
-    if (ideKeys.includes('roo')) {
+
+    // --- Cline / Roo Code ---
+    if (ideKeys.includes('cline')) {
         fs.writeFileSync(path.join(cwd, '.clinerules'), combinedRules);
         generatedFiles.push({ path: '.clinerules', content: combinedRules });
+    }
+
+    // --- Windsurf ---
+    if (ideKeys.includes('windsurf')) {
+        const windsurfContent = `# Windsurf Rules for ${project}
+
+## Session Protocol
+Read \`memory-bank/activeContext.md\` at session start.
+
+${combinedRules}
+`;
+        fs.writeFileSync(path.join(cwd, '.windsurfrules'), windsurfContent);
+        generatedFiles.push({ path: '.windsurfrules', content: windsurfContent });
+    }
+
+    // --- Aider ---
+    if (ideKeys.includes('aider')) {
+        const conventionsContent = `# Coding Conventions for ${project}
+
+## Session Start
+Run: \`/read memory-bank/activeContext.md\` to load project context.
+
+${selectedVibe.systemPrompt}
+
+${selectedStack.techRules}
+
+${memoryPolicy}
+`;
+        fs.writeFileSync(path.join(cwd, 'CONVENTIONS.md'), conventionsContent);
+        generatedFiles.push({ path: 'CONVENTIONS.md', content: conventionsContent });
+
+        // Also create .aider.conf.yml to auto-load conventions
+        const aiderConfContent = `# Aider Configuration
+read:
+  - CONVENTIONS.md
+  - memory-bank/activeContext.md
+`;
+        if (!fs.existsSync(path.join(cwd, '.aider.conf.yml'))) {
+            fs.writeFileSync(path.join(cwd, '.aider.conf.yml'), aiderConfContent);
+            generatedFiles.push({ path: '.aider.conf.yml', content: aiderConfContent });
+        }
     }
 
     // --- Secrets Template ---
@@ -1028,12 +1168,16 @@ async function main() {
     const ideKeys = await multiselect({
         message: 'Which AI Editors do you use?',
         options: [
-            { value: 'antigravity', label: 'Antigravity (.agent)', hint: 'Google\'s Agentic IDE' },
-            { value: 'cursor', label: 'Cursor (.cursorrules)', hint: 'VS Code Fork' },
-            { value: 'roo', label: 'VS Code (Roo Code)', hint: 'Autonomous Extension' },
+            { value: 'agents_md', label: 'AGENTS.md (Universal)', hint: 'Cross-tool standard (Copilot, Roo, etc.)' },
+            { value: 'gemini', label: 'Gemini CLI / Antigravity', hint: 'GEMINI.md + .agent/' },
+            { value: 'claude', label: 'Claude Code', hint: 'CLAUDE.md' },
+            { value: 'cursor', label: 'Cursor', hint: '.cursor/rules/' },
+            { value: 'cline', label: 'Cline / Roo Code', hint: '.clinerules' },
+            { value: 'windsurf', label: 'Windsurf', hint: '.windsurfrules' },
+            { value: 'aider', label: 'Aider', hint: 'CONVENTIONS.md' },
         ],
         required: true,
-        initialValues: ['antigravity', 'cursor', 'roo']
+        initialValues: ['agents_md', 'gemini', 'cursor']
     });
     if (isCancel(ideKeys)) { cancel('Cancelled.'); process.exit(0); }
 
