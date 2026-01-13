@@ -271,6 +271,30 @@ function getProjectName(isExisting) {
     return null;
 }
 
+// --- Smart Context Helper ---
+function getVitalContext(cwd) {
+    if (!fs.existsSync(path.join(cwd, 'package.json'))) return '';
+    try {
+        const pkg = JSON.parse(fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8'));
+        const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+
+        // Filter for "High Impact" packages only
+        const highImpactList = [
+            'next', 'react', 'vue', 'nuxt', 'svelte', 'express', 'fastapi',
+            'supabase', 'firebase', 'prisma', 'drizzle', 'mongoose',
+            'tailwindcss', 'framer-motion', 'gsap', 'three',
+            'zod', 'yup', 'typescript', 'jest', 'vitest', 'cypress',
+            'phaser', 'pixi', 'kaboom'
+        ];
+
+        const vital = Object.keys(allDeps).filter(d =>
+            highImpactList.some(k => d.includes(k))
+        );
+
+        return vital.length > 0 ? `Detected Frameworks: ${vital.join(', ')}` : '';
+    } catch (e) { return ''; }
+}
+
 // --- AI Logic ---
 async function generateDynamicRules(apiKey, project, vibe, stack, cwd) {
     let prompt;
@@ -279,28 +303,32 @@ async function generateDynamicRules(apiKey, project, vibe, stack, cwd) {
     try {
         const openai = new OpenAI({ apiKey });
 
-        // Scan package.json for context
-        let pkgContext = '';
-        if (fs.existsSync(path.join(cwd, 'package.json'))) {
-            try {
-                const pkg = JSON.parse(fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8'));
-                const deps = { ...pkg.dependencies, ...pkg.devDependencies };
-                pkgContext = `Dependencies: ${Object.keys(deps).join(', ')}`;
-            } catch (e) { }
-        }
+        // Scan package.json for context (Smart Filter)
+        const pkgContext = getVitalContext(cwd);
 
         prompt = `
-        Draft a system instruction file (.cursorrules) for an AI coding agent.
-        Project: ${project}
-        Vibe: ${vibe.name}
-        Stack: ${stack.name}
-        Context: ${pkgContext}
-        
-        Requirements:
-        1. Keep the Vibe's philosophy: "${vibe.desc}"
-        2. Analyze the dependencies and generate HIGHLY SPECIFIC rules for them (e.g. if 'zod' is present, enforce schema validation).
-        3. Output ONLY the markdown content for the rules file.
-        `;
+# ROLE
+You are the world's leading Senior Architect for ${stack.name}. You prioritize "${vibe.name}" (${vibe.desc}).
+
+# INPUT CONTEXT
+- Project Name: ${project}
+- Key Dependencies: ${pkgContext || 'None detected (new project)'}
+
+# TASK
+Generate a strictly structured system instruction file (Markdown) for an AI coding agent.
+
+# CRITICAL CONSTRAINTS
+1. **No Fluff:** Do not write "Write clean code." Write actionable rules like "Use early returns" or "Prefer const over let".
+2. **Dependency Aware:** If 'zod' is present, mandate "All API inputs must be validated with Zod schemas." If 'tailwindcss' is present, mandate "Use utility classes, do not create custom CSS files."
+3. **Vibe Check:**
+   - If Vibe includes "Ship Fast", mandate "Skip unit tests for UI components. Browser testing is sufficient."
+   - If Vibe includes "Iron Clad", mandate "Every function requires a Docstring and a Type definition. TDD is mandatory."
+   - If Vibe includes "Neural Core", mandate "All prompts must have an evaluation script."
+
+# OUTPUT FORMAT
+Return ONLY the raw Markdown content. Do not wrap in \`\`\` code blocks.
+Start immediately with: # Project Rules for ${project}
+`;
 
         const completion = await openai.chat.completions.create({
             messages: [{ role: 'user', content: prompt }],
@@ -390,12 +418,96 @@ export async function generateVibe(options) { // Export for testing
         fs.writeFileSync(path.join(cwd, agentRulesPath), combinedRules);
         generatedFiles.push({ path: agentRulesPath, content: combinedRules });
 
-        // Default workflows if generic
-        const workflowPath = '.agent/workflows/deep-refactor.md';
-        if (!fs.existsSync(path.join(cwd, workflowPath))) {
-            const wfContent = `# Workflow: Deep Refactor\n\nTrigger: /refactor\n\n1. Analyze projectbrief.md\n2. Plan\n3. Execute\n4. Verify`;
-            fs.writeFileSync(path.join(cwd, workflowPath), wfContent);
-            generatedFiles.push({ path: workflowPath, content: wfContent });
+        // Dynamic Workflow based on Vibe
+        let workflowContent = '';
+        let workflowName = '';
+
+        if (vibeKey === 'ship_fast') {
+            workflowName = 'ship';
+            workflowContent = `---
+description: Rapid deployment workflow for indie developers
+---
+# Workflow: Speed Run
+
+Trigger: /ship
+
+1. Analyze changed files for critical errors only.
+2. If no critical errors, stage all changes: \`git add .\`
+3. Commit with message: \`git commit -m "wip: rapid prototype update"\`
+4. Push to remote: \`git push\`
+5. Echo success: "🚀 Shipped."`;
+        } else if (vibeKey === 'iron_clad') {
+            workflowName = 'audit';
+            workflowContent = `---
+description: Enterprise safety check workflow
+---
+# Workflow: Safety Check
+
+Trigger: /audit
+
+1. Run static analysis (eslint, tsc --noEmit).
+2. Check for missing types and docstrings.
+3. Verify test coverage > 80%.
+4. If any check fails, abort and list issues.
+5. If all pass, echo: "🛡️ Audit Passed. Ready for PR."`;
+        } else if (vibeKey === 'neural_core') {
+            workflowName = 'eval';
+            workflowContent = `---
+description: AI Research evaluation workflow
+---
+# Workflow: Evaluate
+
+Trigger: /eval
+
+1. Identify changed prompts or AI logic.
+2. Generate an evaluation script for the changes.
+3. Run the evaluation and report metrics.
+4. Log results to memory-bank/evaluations.md.`;
+        } else if (vibeKey === 'creative_rush') {
+            workflowName = 'wow';
+            workflowContent = `---
+description: Creative polish workflow
+---
+# Workflow: Wow Check
+
+Trigger: /wow
+
+1. Identify UI components with no animations.
+2. Add micro-interactions (hover, focus states).
+3. Check for consistent motion timing.
+4. Echo: "🎨 Dazzle applied."`;
+        } else if (vibeKey === 'pixel_perfect') {
+            workflowName = 'juice';
+            workflowContent = `---
+description: Game feel polish workflow
+---
+# Workflow: Juice It
+
+Trigger: /juice
+
+1. Identify player actions without feedback.
+2. Add screen shake, particles, or sound cues.
+3. Verify frame rate > 60fps.
+4. Echo: "👾 Juiced."`;
+        } else {
+            workflowName = 'refactor';
+            workflowContent = `---
+description: General deep refactor workflow
+---
+# Workflow: Deep Refactor
+
+Trigger: /refactor
+
+1. Analyze projectbrief.md
+2. Plan
+3. Execute
+4. Verify`;
+        }
+
+        const wfPath = `.agent/workflows/${workflowName}.md`;
+        if (!fs.existsSync(path.join(cwd, wfPath))) {
+            fs.writeFileSync(path.join(cwd, wfPath), workflowContent);
+            generatedFiles.push({ path: wfPath, content: workflowContent });
         }
     }
     if (ideKeys.includes('cursor')) {
