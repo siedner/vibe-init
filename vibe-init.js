@@ -1419,6 +1419,9 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 100));
     intro(`${pc.bgCyan(pc.black(' GOD MODE ACTIVATED '))}`);
 
+    // Show keyboard shortcuts hint
+    console.log(pc.dim(`  ↑↓ Navigate  •  Enter Select  •  Ctrl+C Quit\n`));
+
     // Vibe-ify check (omitted for brevity, assume flow)
     // ... (This part requires significant move of existing logic into main, 
     // but the previous code structure had main calling logic inline. 
