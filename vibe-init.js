@@ -694,16 +694,170 @@ function getVitalContext(cwd) {
     } catch (e) { return ''; }
 }
 
+// --- Version-Specific Gotchas Database (Offline) ---
+const GOTCHAS = {
+    // Framework gotchas
+    'next': {
+        '15': 'Next.js 15: Server Components are default. Add "use client" at top of file for interactivity.',
+        '14': 'Next.js 14: App Router is stable. Prefer it over Pages Router for new projects.',
+        '*': 'Next.js: Use next/image for automatic image optimization.'
+    },
+    'tailwindcss': {
+        '4': 'Tailwind v4: Uses CSS-first configuration with @theme directive. No tailwind.config.js needed.',
+        '3': 'Tailwind v3: Configure in tailwind.config.js. Use @apply sparingly.',
+        '*': 'Tailwind: Avoid @apply in components - use utility classes directly.'
+    },
+    'prisma': {
+        '5': 'Prisma 5: Use $extends for middleware, not deprecated middleware API.',
+        '*': 'Prisma: Always run prisma generate after schema changes.'
+    },
+    '@supabase/supabase-js': {
+        '*': 'Supabase: Enable RLS on ALL tables. Use service_role key ONLY server-side.'
+    },
+    'zod': {
+        '*': 'Zod: Validate ALL external inputs (API, forms). Use .safeParse() for error handling.'
+    },
+    'react': {
+        '19': 'React 19: Use new use() hook for data fetching. Actions replace useTransition patterns.',
+        '18': 'React 18: Prefer useId() for SSR-safe unique IDs.',
+        '*': 'React: Use React.memo() sparingly - profile first.'
+    },
+    'typescript': {
+        '5': 'TypeScript 5: Use satisfies operator for type-safe object literals.',
+        '*': 'TypeScript: Enable strict mode. Avoid "any" - use "unknown" instead.'
+    },
+    'playwright': {
+        '*': 'Playwright: Use locator strategies (getByRole, getByText) over CSS selectors.'
+    },
+    'flutter': {
+        '*': 'Flutter: Use const constructors. Avoid setState in favor of state management.'
+    }
+};
+
+// --- Comprehensive Project Analysis (Works Offline) ---
+function analyzeProject(cwd) {
+    const analysis = {
+        frameworks: [],
+        dependencies: {},
+        structure: [],
+        gotchas: [],
+        language: 'unknown'
+    };
+
+    // --- Node.js / JavaScript Projects ---
+    const pkgPath = path.join(cwd, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+        try {
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+            const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+            analysis.dependencies = allDeps;
+            analysis.language = allDeps.typescript ? 'TypeScript' : 'JavaScript';
+
+            // Detect frameworks with versions
+            const frameworkMap = {
+                'next': 'Next.js',
+                'react': 'React',
+                'vue': 'Vue.js',
+                'nuxt': 'Nuxt',
+                'svelte': 'Svelte',
+                'express': 'Express',
+                '@supabase/supabase-js': 'Supabase',
+                'firebase': 'Firebase',
+                'prisma': 'Prisma',
+                'drizzle-orm': 'Drizzle',
+                'tailwindcss': 'Tailwind CSS',
+                'zod': 'Zod',
+                'playwright': 'Playwright',
+                '@playwright/test': 'Playwright'
+            };
+
+            for (const [dep, name] of Object.entries(frameworkMap)) {
+                if (allDeps[dep]) {
+                    const version = allDeps[dep].replace(/[\^~>=<]/g, '').split('.')[0];
+                    analysis.frameworks.push({ name, version: allDeps[dep], majorVersion: version });
+
+                    // Add version-specific gotchas
+                    if (GOTCHAS[dep]) {
+                        const versionGotcha = GOTCHAS[dep][version] || GOTCHAS[dep]['*'];
+                        if (versionGotcha && !analysis.gotchas.includes(versionGotcha)) {
+                            analysis.gotchas.push(versionGotcha);
+                        }
+                    }
+                }
+            }
+        } catch (e) { /* ignore parse errors */ }
+    }
+
+    // --- Python Projects ---
+    const reqPath = path.join(cwd, 'requirements.txt');
+    const pyprojectPath = path.join(cwd, 'pyproject.toml');
+    if (fs.existsSync(reqPath) || fs.existsSync(pyprojectPath)) {
+        analysis.language = 'Python';
+        if (fs.existsSync(reqPath)) {
+            const content = fs.readFileSync(reqPath, 'utf-8');
+            if (content.includes('fastapi')) analysis.frameworks.push({ name: 'FastAPI', version: 'detected' });
+            if (content.includes('django')) analysis.frameworks.push({ name: 'Django', version: 'detected' });
+            if (content.includes('flask')) analysis.frameworks.push({ name: 'Flask', version: 'detected' });
+            if (content.includes('playwright')) {
+                analysis.frameworks.push({ name: 'Playwright', version: 'detected' });
+                analysis.gotchas.push(GOTCHAS['playwright']['*']);
+            }
+        }
+    }
+
+    // --- Flutter Projects ---
+    const pubspecPath = path.join(cwd, 'pubspec.yaml');
+    if (fs.existsSync(pubspecPath)) {
+        analysis.language = 'Dart';
+        analysis.frameworks.push({ name: 'Flutter', version: 'detected' });
+        analysis.gotchas.push(GOTCHAS['flutter']['*']);
+    }
+
+    // --- Android Projects ---
+    const gradlePath = path.join(cwd, 'build.gradle.kts');
+    const gradlePathOld = path.join(cwd, 'build.gradle');
+    if (fs.existsSync(gradlePath) || fs.existsSync(gradlePathOld)) {
+        analysis.language = 'Kotlin';
+        analysis.frameworks.push({ name: 'Android', version: 'detected' });
+        analysis.gotchas.push('Android: Use Jetpack Compose for new UI. Avoid XML layouts.');
+    }
+
+    // --- Folder Structure Detection ---
+    if (fs.existsSync(path.join(cwd, 'app'))) analysis.structure.push('App Router / app directory');
+    if (fs.existsSync(path.join(cwd, 'pages'))) analysis.structure.push('Pages Router');
+    if (fs.existsSync(path.join(cwd, 'src'))) analysis.structure.push('src/ layout');
+    if (fs.existsSync(path.join(cwd, 'lib'))) analysis.structure.push('lib/ directory');
+    if (fs.existsSync(path.join(cwd, 'components'))) analysis.structure.push('components/ directory');
+    if (fs.existsSync(path.join(cwd, 'prisma'))) analysis.structure.push('Prisma schema');
+    if (fs.existsSync(path.join(cwd, 'supabase'))) analysis.structure.push('Supabase config');
+
+    return analysis;
+}
+
 // --- AI Logic ---
-async function generateDynamicRules(apiKey, project, vibe, stack, cwd) {
+async function generateDynamicRules(apiKey, project, vibe, stack, cwd, analysis = null) {
     let prompt;
     let model = process.env.VIBE_AI_MODEL || 'gpt-4o';
 
     try {
         const openai = new OpenAI({ apiKey });
 
-        // Scan package.json for context (Smart Filter)
+        // Use analysis if provided, fallback to basic context
         const pkgContext = getVitalContext(cwd);
+
+        // Build rich context from analysis
+        let analysisContext = '';
+        if (analysis && analysis.frameworks.length > 0) {
+            analysisContext = `
+## Detected Stack (Auto-Analyzed)
+- Language: ${analysis.language}
+- Frameworks: ${analysis.frameworks.map(f => `${f.name} ${f.version}`).join(', ')}
+- Structure: ${analysis.structure.join(', ') || 'Standard'}
+
+## Version-Specific Warnings (Include These)
+${analysis.gotchas.map(g => `- ${g}`).join('\n')}
+`;
+        }
 
         prompt = `
 # ROLE
@@ -712,17 +866,19 @@ You are the world's leading Senior Architect for ${stack.name}. You prioritize "
 # INPUT CONTEXT
 - Project Name: ${project}
 - Key Dependencies: ${pkgContext || 'None detected (new project)'}
+${analysisContext}
 
 # TASK
 Generate a strictly structured system instruction file (Markdown) for an AI coding agent.
 
 # CRITICAL CONSTRAINTS
 1. **No Fluff:** Do not write "Write clean code." Write actionable rules like "Use early returns" or "Prefer const over let".
-2. **Dependency Aware:** If 'zod' is present, mandate "All API inputs must be validated with Zod schemas." If 'tailwindcss' is present, mandate "Use utility classes, do not create custom CSS files."
+2. **Dependency Aware:** Generate rules specific to the detected frameworks and versions. Include the version-specific warnings provided.
 3. **Vibe Check:**
    - If Vibe includes "Ship Fast", mandate "Skip unit tests for UI components. Browser testing is sufficient."
    - If Vibe includes "Iron Clad", mandate "Every function requires a Docstring and a Type definition. TDD is mandatory."
    - If Vibe includes "Neural Core", mandate "All prompts must have an evaluation script."
+4. **Actionable:** Every rule should be something an AI can verify/enforce.
 
 # OUTPUT FORMAT
 Return ONLY the raw Markdown content. Do not wrap in \`\`\` code blocks.
@@ -763,18 +919,34 @@ export async function generateVibe(options) { // Export for testing
     const selectedStack = STACKS[stackKey];
     const memoryPolicy = useStrictMemory ? MEMORY_POLICIES.strict : MEMORY_POLICIES.casual;
 
+    // --- Run Project Analysis (Works Offline) ---
+    const analysis = analyzeProject(cwd);
+
+    // Format analysis for templates
+    const frameworksList = analysis.frameworks.length > 0
+        ? analysis.frameworks.map(f => `- ${f.name} (${f.version})`).join('\n')
+        : '- No frameworks detected (new project)';
+
+    const gotchasList = analysis.gotchas.length > 0
+        ? analysis.gotchas.map(g => `> ⚠️ ${g}`).join('\n\n')
+        : '';
+
+    const structureList = analysis.structure.length > 0
+        ? analysis.structure.map(s => `- ${s}`).join('\n')
+        : '- Standard structure';
+
     // --- AI Hybrid Check ---
     let combinedRules;
     let llmLog;
     const openAiKey = process.env.OPENAI_API_KEY;
 
     if (openAiKey) {
-        // AI Mode
-        const aiResult = await generateDynamicRules(openAiKey, project, selectedVibe, selectedStack, cwd);
+        // AI Mode - pass analysis for richer context
+        const aiResult = await generateDynamicRules(openAiKey, project, selectedVibe, selectedStack, cwd, analysis);
 
         if (aiResult.success) {
             combinedRules = aiResult.rules + `\n\n${memoryPolicy}`;
-            llmLog = { ...aiResult, vibe: selectedVibe.name, stack: selectedStack.name };
+            llmLog = { ...aiResult, vibe: selectedVibe.name, stack: selectedStack.name, analysisUsed: true };
         } else {
             // Fallback with Error Log
             combinedRules = `# Role: Vibe Coder\n\n${selectedVibe.systemPrompt}\n\n${selectedStack.techRules}\n\n${memoryPolicy}`;
@@ -786,12 +958,44 @@ export async function generateVibe(options) { // Export for testing
         llmLog = { note: 'Static Mode (No API Key)', vibe: selectedVibe.name, stack: selectedStack.name };
     }
 
-    // Create Memory Bank (Shared)
+    // Create Memory Bank (Shared) with Analysis Data
     const memBankDir = path.join(cwd, 'memory-bank');
     if (!fs.existsSync(memBankDir)) fs.mkdirSync(memBankDir, { recursive: true });
 
+    // Enhanced projectbrief template with analysis
+    const projectBriefContent = `# Project Brief
+
+## Core Philosophy
+- **Project:** ${project}
+- **Vibe:** ${selectedVibe.name}
+- **Stack:** ${selectedStack.name}
+- **Language:** ${analysis.language}
+
+## Detected Environment
+### Frameworks & Dependencies
+${frameworksList}
+
+### Project Structure
+${structureList}
+
+${gotchasList ? `## Version-Specific Notes\n${gotchasList}\n` : ''}
+## Tech Configuration
+${selectedStack.techRules}
+
+## Agent Constitution
+${selectedVibe.systemPrompt}
+`;
+
+    // Write projectbrief.md
+    const briefPath = path.join(cwd, 'memory-bank/projectbrief.md');
+    if (!fs.existsSync(briefPath)) {
+        fs.writeFileSync(briefPath, projectBriefContent);
+        generatedFiles.push({ path: 'memory-bank/projectbrief.md', content: projectBriefContent });
+    }
+
+    // Write other memory bank files
     for (const [filePath, content] of Object.entries(COMMON_FILES)) {
-        if (filePath.startsWith('memory-bank')) {
+        if (filePath.startsWith('memory-bank') && filePath !== 'memory-bank/projectbrief.md') {
             const fullPath = path.join(cwd, filePath);
             let finalContent = content
                 .replace(/{{PROJECT_NAME}}/g, project)
