@@ -2,19 +2,17 @@
 *AGENT INSTRUCTION: Update this file after every successful task.*
 
 ## Current Focus
-- **Task:** UX Improvements Complete
-- **Current Step:** Added back navigation and fixed review default.
+- **Task:** Documentation Update
+- **Current Step:** README and memory bank updated with recent features.
 
 ## Recent Changes
-- [Today]: Added "← Back" navigation to selection flow using state machine pattern:
-  - Stack selection → back to Vibe
-  - Editors selection → back to Stack  
-  - Memory Policy → back to Editors
-- [Today]: Changed "Review generated files?" default to No.
-- [Today]: Refactored selection flow from nested loops to clean state machine.
+- [Today]: Added Groq as alternative LLM provider (OpenAI-compatible API).
+- [Today]: Added keyboard shortcut hints to intro (`↑↓ Navigate • Enter Select • Ctrl+C Quit`).
+- [Today]: Added `STACK_ORDER` for logical display ordering (Web → Mobile → Backend → Games).
+- [Today]: Enhanced LLM integration with smart project analysis and version-specific gotchas.
+- [Today]: Added Flutter and Android Native (Kotlin) stacks.
+- [Earlier]: Added back navigation to selection flow.
 - [Earlier]: Added `nodejs_cli` CLI Tool stack.
 
 ## Next Steps
-- Publish to npm (future).
-
-
+- Publish to npm.

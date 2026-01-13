@@ -18,8 +18,8 @@
 - [x] Hacker Spinner & Dynamic Outro
 
 ## Phase 4: Release [Pending]
-- [x] Push to GitHub <!-- id: 25 -->
-- [ ] Publish Package
+- [x] Push to GitHub
+- [ ] Publish Package to npm
 
 ## Phase 5: Agent Configuration Update [Completed]
 - [x] Research 2025 Agent Standards (AGENTS.md, GEMINI.md, etc.)
@@ -34,3 +34,12 @@
 - [x] Include UX best practices and library recommendations
 - [x] Add starter files (my-cli.js, package.json)
 
+## Phase 7: Enhanced LLM & UX [Completed]
+- [x] Add Flutter and Android Native (Kotlin) stacks
+- [x] Add smart project analysis (offline framework detection)
+- [x] Add version-specific gotchas database
+- [x] Add Groq as alternative LLM provider
+- [x] Add `STACK_ORDER` for logical display ordering
+- [x] Add back navigation to selection flow (state machine)
+- [x] Add keyboard shortcut hints to intro
+- [x] Update README with new features

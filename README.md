@@ -2,7 +2,7 @@
 
 ![Vibe Init Banner](https://img.shields.io/badge/VIBE-INIT-cyan?style=for-the-badge)
 
-A graphical CLI that instantly configures a structured, agentic environment for Google Antigravity. It sets up the persistent specific files and folders that turn your IDE into an autonomous coding partner.
+A graphical CLI that instantly configures a structured, agentic environment for AI coding assistants. It sets up the persistent files and folders that turn your IDE into an autonomous coding partner.
 
 ## 🚀 Installation
 
@@ -57,6 +57,32 @@ You can combine any Vibe with any Stack. For example:
 -   **"Iron Clad" + "Python"**: Strict Typed Python with tests.
 -   **"Ship Fast" + "Next.js"**: Rapid React prototyping.
 
+## 🧠 AI-Powered Rules (Optional)
+
+Vibe Init can use LLMs to generate tailored project rules based on your detected stack:
+
+| Provider | Env Variable | Model Variable |
+| :--- | :--- | :--- |
+| **OpenAI** | `OPENAI_API_KEY` | `VIBE_AI_MODEL` (default: `gpt-4o`) |
+| **Groq** | `GROQ_API_KEY` | `GROQ_MODEL` (default: `llama-3.3-70b-versatile`) |
+
+> **Priority**: OpenAI → Groq. If neither is set, uses static templates (still great!).
+
+Create a `.vibe-init` file in your home or project directory:
+```bash
+OPENAI_API_KEY=sk-...
+# OR
+GROQ_API_KEY=gsk-...
+GROQ_MODEL=llama-3.3-70b-versatile
+```
+
+## 🔍 Smart Project Analysis (Offline)
+
+Even without an LLM, Vibe Init scans your project and:
+- **Detects frameworks** from `package.json`, `requirements.txt`, `pubspec.yaml`
+- **Shows version-specific gotchas** (e.g., "Tailwind v4: Use @theme, not config.js")
+- **Pre-fills `projectbrief.md`** with detected stack info
+
 ## ✨ 2025 Agent Standards Support
 
 Vibe Init now follows the latest industry standards for AI Agent configuration:
@@ -84,4 +110,15 @@ It creates a "God Mode" directory structure tailored to your Stack + Editor:
 All generated configurations include a **Bootstrap Instruction** that forces the AI Agent to read `memory-bank/activeContext.md` before taking any action. This solves the "context amnesia" problem common in complex tasks.
 
 **After running `vibe-init`, you MUST restart your IDE/Editor for the new rules to take effect.**
+
+## 🛠️ Available Stacks
+
+| Category | Stacks |
+| :--- | :--- |
+| **Web** | Next.js + Supabase, Next.js + Netlify, T3 Stack, Generic Web |
+| **Mobile** | Expo (React Native), Flutter, Android Native (Kotlin) |
+| **Backend** | Python + FastAPI, Go API |
+| **CLI/Tools** | Node.js CLI, Chrome Extension |
+| **Automation** | Python Playwright, Node.js Playwright |
+| **Games** | Phaser, Godot Engine |
 
