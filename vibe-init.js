@@ -601,6 +601,22 @@ main().catch(console.error);
     }
 };
 
+// --- Stack Display Order (controls UI without reordering code) ---
+const STACK_ORDER = [
+    // Web (most common)
+    'next_supabase', 'next_netlify', 't3_stack', 'generic_web',
+    // Mobile
+    'mobile_expo', 'mobile_flutter', 'android_kotlin',
+    // Backend
+    'python_fastapi', 'golang_api',
+    // CLI & Tools
+    'nodejs_cli', 'chrome_ext',
+    // Browser Automation
+    'python_scraper', 'node_browser',
+    // Games (niche)
+    'web_game_phaser', 'godot_engine'
+];
+
 // --- 3. MEMORY POLICIES ---
 const MEMORY_POLICIES = {
     strict: `
@@ -1489,12 +1505,12 @@ async function main() {
                         hint: `Recommended for ${selectedVibe.name}`
                     }));
 
-                const otherOptions = Object.entries(STACKS)
-                    .filter(([key]) => !recommendedKeys.includes(key))
-                    .map(([key, val]) => ({
+                const otherOptions = STACK_ORDER
+                    .filter(key => STACKS[key] && !recommendedKeys.includes(key))
+                    .map(key => ({
                         value: key,
-                        label: val.name,
-                        hint: val.desc
+                        label: STACKS[key].name,
+                        hint: STACKS[key].desc
                     }));
 
                 stackKey = await select({
