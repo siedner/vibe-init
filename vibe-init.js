@@ -97,6 +97,69 @@ Your goal is to create ADDICTIVE GAMEPLAY loops.
   - **Performance:** Zero allocations in the update loop. Use Object Pooling.
 `,
         outro: '👾 High Score Saved. insert coin.'
+    },
+    oss_maintainer: {
+        name: '📖 OSS Maintainer (Clean Code)',
+        desc: 'Readability > Cleverness. "Explain it like I am 5".',
+        systemPrompt: `
+## Philosophy: OSS MAINTAINER
+Your goal is LONG-TERM MAINTAINABILITY.
+- **Documentation:** Every exported function MUST have JSDoc/Docstrings explaining input/output.
+- **Commits:** Use Conventional Commits (feat:, fix:, docs:) exclusively.
+- **Simplicity:** Prefer verbose, clear code over clever one-liners.
+- **No Magic:** Avoid "magic numbers" or hidden side effects. Explicit is better than implicit.
+`,
+        outro: '📖 Readability Optimized. Contributors welcome.'
+    },
+    a11y_advocate: {
+        name: '♿ A11y Advocate (Accessibility)',
+        desc: 'Inclusion > Features. "Keyboard for everything".',
+        systemPrompt: `
+## Philosophy: A11Y ADVOCATE
+Your goal is WCAG 2.1 AA COMPLIANCE.
+- **Semantic HTML:** Never use a \`div\` where a \`button\`, \`nav\`, or \`section\` works.
+- **Keyboard:** All interactions must be usable via Tab/Enter/Space. Focus states must be visible.
+- **Attributes:** Ensure all images have \`alt\` text and inputs have \`labels\`.
+- **Testing:** When asked to test, check screen-reader compatibility first.
+`,
+        outro: '♿ Access Granted for Everyone.'
+    },
+    data_wizard: {
+        name: '🧙‍♂️ Data Wizard (Analysis)',
+        desc: 'Insights > Code. "Reproducible Notebooks".',
+        systemPrompt: `
+## Philosophy: DATA WIZARD
+Your goal is REPRODUCIBLE INSIGHTS.
+- **Visualization:** Prefer Plotly/Seaborn. Always label axes and add titles.
+- **Data Safety:** Never print full dataframes. Use \`.head()\` or \`.info()\`.
+- **Performance:** Vectorize operations (pandas/numpy) instead of looping.
+- **Structure:** If in a notebook, keep cells independent. No hidden state.
+`,
+        outro: '🧙‍♂️ Hypothesis: Confirmed.'
+    },
+    ghost_operator: {
+        name: '👻 Ghost Operator (Scraping/RPA)',
+        desc: 'Stealth > Speed. Persistent Sessions.',
+        systemPrompt: `
+## Philosophy: GHOST OPERATOR
+Your goal is INVISIBLE EXECUTION using PERSISTENT SESSIONS.
+
+### 1. The "Login Logic" (Crucial)
+You must ALWAYS implement the "Check-Login-Save" loop:
+- IF auth.json exists: Load it. Go to Target URL.
+- IF NOT Logged In (selector check): Perform Login. Save auth.json.
+- ELSE: Perform Login. Save auth.json.
+
+### 2. Stealth Rules
+- **Humanity:** Randomize delays (500ms - 2000ms) between actions.
+- **Resilience:** If a click fails, retry once with force=True or dispatchEvent.
+- **Ethics:** Do not hammer servers. Use saved sessions to minimize requests.
+
+### 3. CRITICAL SECURITY
+- Never hardcode passwords. Use \`process.env.PASSWORD\`.
+- Reuse cookies from \`auth.json\` to avoid triggering anti-bot login challenges.
+`,
+        outro: '👻 Ghost Mode: Session persistence active.'
     }
 };
 
@@ -199,6 +262,168 @@ DATABASE_URL=postgresql://user:password@localhost:5432/dbname`
 - **Standards:** ESM Modules, Modern JS/TS features.
 - **Format:** Prettier + ESLint recommended.
 `
+    },
+    mobile_expo: {
+        name: 'Mobile (Expo / React Native)',
+        desc: 'React Native, Expo Router, NativeWind',
+        techRules: `
+## Tech Stack: Expo (React Native)
+- **Framework:** Expo SDK 52+
+- **Routing:** Expo Router (File-based routing).
+- **Styling:** NativeWind (Tailwind for Native) or StyleSheet.create.
+- **CRITICAL RULES:**
+  - **NO HTML:** Never use \`<div>\`, \`<span>\`, or \`<h1>\`. Use \`<View>\`, \`<Text>\`, \`<SafeAreaView>\`.
+  - **Platform:** Handle iOS/Android differences using \`Platform.OS\`.
+  - **Navigation:** Use \`<Stack>\` and \`<Tabs>\` from Expo Router.
+`,
+        envVars: `EXPO_PUBLIC_API_URL=`
+    },
+    t3_stack: {
+        name: 'T3 Stack (Next.js + tRPC)',
+        desc: 'Next.js, tRPC, Prisma, Tailwind',
+        techRules: `
+## Tech Stack: T3 (The "Grand" Stack)
+- **API:** tRPC (Type-safe APIs). No REST endpoints unless external.
+- **Database:** Prisma ORM (Schema-first).
+- **Auth:** NextAuth.js (Auth.js).
+- **Rules:**
+  - **Type Safety:** The frontend must infer types from the backend router. No manual type duplication.
+  - **Mutations:** Use Zod schemas for all mutation inputs.
+  - **Server:** Keep heavy logic in the tRPC router, not the UI component.
+`,
+        envVars: `DATABASE_URL=
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=http://localhost:3000`
+    },
+    chrome_ext: {
+        name: 'Chrome Extension (Manifest V3)',
+        desc: 'Plasmo or Vanilla, Service Workers',
+        techRules: `
+## Tech Stack: Chrome Extension (Manifest V3)
+- **Manifest:** Version 3 (Strict Requirement).
+- **Architecture:**
+  - **Popup:** React/HTML UI for the toolbar icon.
+  - **Content Script:** Runs in the webpage (isolated world).
+  - **Background:** Service Worker (Ephemeral, no DOM access).
+- **Communication:** Use \`chrome.runtime.sendMessage\` for passing data between contexts.
+- **Storage:** Use \`chrome.storage.local\` (Async).
+`,
+        envVars: ``
+    },
+    golang_api: {
+        name: 'Go API (Backend)',
+        desc: 'Go 1.24+, Chi/Gin, SQLC',
+        techRules: `
+## Tech Stack: Go (Golang)
+- **Language:** Go 1.24+
+- **Router:** Chi or Gin.
+- **Database:** SQLC (Type-safe SQL) or GORM.
+- **Idioms:**
+  - **Error Handling:** Strictly \`if err != nil\`. No exceptions/try-catch.
+  - **Context:** Always pass \`ctx context.Context\` as the first argument to long-running functions.
+  - **Concurrency:** Use Goroutines + Channels, not Async/Await.
+`,
+        envVars: `PORT=8080
+DB_DSN=postgres://user:pass@localhost:5432/db`
+    },
+    python_scraper: {
+        name: 'Python Playwright (Browser Automation)',
+        desc: 'Python, Async, Persistent Auth',
+        techRules: `
+## Tech Stack: Python Automation
+- **Engine:** Playwright (Python Async).
+- **Auth Strategy:**
+  1. Check \`auth.json\` for context storage state.
+  2. Use \`context = await browser.new_context(storage_state="auth.json")\`.
+  3. If file missing, log in and run \`await context.storage_state(path="auth.json")\`.
+`,
+        envVars: `HEADLESS=false
+TARGET_URL=https://example.com`,
+        extraFiles: {
+            'auth_manager.py': `import os
+import json
+from playwright.async_api import BrowserContext
+
+AUTH_FILE = "auth.json"
+
+async def load_session(browser):
+    """Creates a context with saved state if available"""
+    if os.path.exists(AUTH_FILE):
+        print(f"🍪 Loading session from {AUTH_FILE}")
+        return await browser.new_context(storage_state=AUTH_FILE)
+    
+    print("⚠️ No session found. Starting fresh.")
+    return await browser.new_context()
+
+async def save_session(context: BrowserContext):
+    """Saves current cookies and local storage"""
+    print(f"💾 Saving session to {AUTH_FILE}")
+    await context.storage_state(path=AUTH_FILE)
+
+def has_session():
+    return os.path.exists(AUTH_FILE)
+`
+        }
+    },
+    node_browser: {
+        name: 'Node.js Browser (Playwright)',
+        desc: 'TypeScript, Playwright, Stealth, Persistent Auth',
+        techRules: `
+## Tech Stack: Node.js Automation
+- **Engine:** Playwright (TS).
+- **Auth Strategy:**
+  1. ALWAYS try to load session from \`auth.json\` first.
+  2. If the session is invalid (logged out), perform login AND save new state to \`auth.json\`.
+  3. Use the \`AuthHelper\` class in \`src/auth-helper.ts\`.
+- **Stealth:**
+  - Randomize mouse movements using \`page.mouse.move()\`.
+  - Never click generic coordinates. Click specific selectors.
+`,
+        extraFiles: {
+            'src/auth-helper.ts': `import { Page, BrowserContext } from '@playwright/test';
+import fs from 'fs';
+
+const AUTH_FILE = 'auth.json';
+
+export class AuthHelper {
+  
+  /**
+   * Tries to load cookies/localStorage from auth.json
+   */
+  static async loadSession(context: BrowserContext): Promise<boolean> {
+    if (fs.existsSync(AUTH_FILE)) {
+      console.log('🍪 Loading saved session...');
+      const state = JSON.parse(fs.readFileSync(AUTH_FILE, 'utf-8'));
+      await context.addCookies(state.cookies);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Saves the current cookies/localStorage to auth.json
+   */
+  static async saveSession(context: BrowserContext) {
+    console.log('💾 Saving session to auth.json...');
+    const cookies = await context.cookies();
+    const state = { cookies };
+    fs.writeFileSync(AUTH_FILE, JSON.stringify(state, null, 2));
+  }
+
+  /**
+   * Check if we are actually logged in (Customize selector)
+   */
+  static async isLoggedIn(page: Page, selector: string = '#user-menu'): Promise<boolean> {
+    try {
+      await page.waitForSelector(selector, { timeout: 3000 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+`
+        }
     }
 };
 
@@ -489,6 +714,62 @@ Trigger: /juice
 2. Add screen shake, particles, or sound cues.
 3. Verify frame rate > 60fps.
 4. Echo: "👾 Juiced."`;
+        } else if (vibeKey === 'oss_maintainer') {
+            workflowName = 'docs';
+            workflowContent = `---
+description: Documentation and clean code workflow
+---
+# Workflow: Document
+
+Trigger: /docs
+
+1. Find all exported functions without JSDoc comments.
+2. Add proper JSDoc with @param and @returns.
+3. Verify all commits follow Conventional Commits format.
+4. Echo: "📖 Documentation complete."`;
+        } else if (vibeKey === 'a11y_advocate') {
+            workflowName = 'a11y-check';
+            workflowContent = `---
+description: Accessibility compliance workflow
+---
+# Workflow: A11y Check
+
+Trigger: /a11y
+
+1. Scan for non-semantic HTML (div buttons, span links).
+2. Check all images have alt text.
+3. Verify keyboard navigation works (Tab through all interactive elements).
+4. Run axe-core or similar accessibility audit.
+5. Echo: "♿ Accessibility verified."`;
+        } else if (vibeKey === 'data_wizard') {
+            workflowName = 'notebook';
+            workflowContent = `---
+description: Reproducible notebook workflow
+---
+# Workflow: Notebook Check
+
+Trigger: /notebook
+
+1. Verify all cells run top-to-bottom without errors.
+2. Check no dataframe is printed without .head() or .info().
+3. Ensure all plots have labeled axes.
+4. Echo: "🧙‍♂️ Notebook reproducible."`;
+        } else if (vibeKey === 'ghost_operator') {
+            workflowName = 'debug-scrape';
+            workflowContent = `---
+description: Visual debug workflow for browser automation
+---
+# Workflow: Visual Debug
+
+Trigger: /debug-scrape
+
+1. Run the scraper in **Headful** mode (headless: false).
+2. If it fails:
+   - Take a Screenshot (page.screenshot).
+   - Dump the current page HTML to logs/error.html.
+   - Analyze the HTML to see if the selector changed.
+3. Propose a selector fix based on the HTML dump.
+4. Echo: "👻 Debug complete."`;
         } else {
             workflowName = 'refactor';
             workflowContent = `---
@@ -677,6 +958,7 @@ async function main() {
                 message: 'Choose your Tech Stack:',
                 options: [
                     ...Object.entries(STACKS).map(([key, val]) => ({ value: key, label: val.name, hint: val.desc })),
+                    { value: 'custom', label: '🔧 Custom Stack', hint: 'Describe it yourself' },
                     { value: 'help', label: 'ℹ️  READ ME / HELP', hint: 'Learn about Stacks' }
                 ],
             });
@@ -685,6 +967,27 @@ async function main() {
             if (stackKey === 'help') {
                 printHelp();
                 continue;
+            }
+
+            if (stackKey === 'custom') {
+                const customStackName = await text({
+                    message: 'Name your stack (e.g. "Rust + Actix"):',
+                    validate: (val) => val.length === 0 ? 'Name is required!' : undefined
+                });
+                if (isCancel(customStackName)) { cancel('Cancelled.'); process.exit(0); }
+
+                const customContext = await text({
+                    message: 'List key libraries (comma separated):',
+                    placeholder: 'e.g. actix-web, tokio, serde'
+                });
+                if (isCancel(customContext)) { cancel('Cancelled.'); process.exit(0); }
+
+                STACKS['custom'] = {
+                    name: customStackName,
+                    desc: 'User defined stack',
+                    techRules: `## Tech Stack: ${customStackName}\n- Key Libraries: ${customContext || 'None specified'}\n- Rule: Follow best practices for these libraries.`,
+                    envVars: ''
+                };
             }
             break;
         }
